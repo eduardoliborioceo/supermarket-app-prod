@@ -1,7 +1,8 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
 from app.extensions import db_cursor
 from app.repositories.produto_repository import ProdutoRepository
 from app.services.produto_service import ProdutoService
+from app.routes.auth import login_required
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 
@@ -10,23 +11,8 @@ def _bad_request(msg, status=400):
     return jsonify({"status": "error", "message": msg}), status
 
 
-@api_bp.route("/produto/excluir", methods=["POST"])
-def excluir_produto():
-    data = request.get_json(silent=True) or {}
-    produto_id = data.get("id")
-
-    if not produto_id:
-        return _bad_request("ID obrigatório.")
-
-    try:
-        with db_cursor() as cur:
-            ProdutoRepository.delete(cur, produto_id)
-        return jsonify({"status": "ok"})
-    except Exception:
-        return _bad_request("Erro ao excluir produto.", status=500)
-
-
 @api_bp.route("/produto/adicionar", methods=["POST"])
+@login_required
 def adicionar_produto():
     data = request.get_json(silent=True) or {}
     nome = ProdutoService.normalizar_nome(data.get("nome", ""))
@@ -37,7 +23,7 @@ def adicionar_produto():
         preco = float(preco)
         ProdutoService.validar(nome, preco, setor=setor)
         with db_cursor() as cur:
-            ProdutoRepository.upsert_by_name(cur, nome, setor, preco)
+            ProdutoRepository.upsert_by_name(cur, nome, setor, preco, session["user_id"])
         return jsonify({"status": "ok", "nome": nome, "preco": preco, "setor": setor})
     except ValueError as e:
         return _bad_request(str(e))
@@ -45,7 +31,25 @@ def adicionar_produto():
         return _bad_request("Erro ao salvar produto.", status=500)
 
 
+@api_bp.route("/produto/excluir", methods=["POST"])
+@login_required
+def excluir_produto():
+    data = request.get_json(silent=True) or {}
+    produto_id = data.get("id")
+
+    if not produto_id:
+        return _bad_request("ID obrigatório.")
+
+    try:
+        with db_cursor() as cur:
+            ProdutoRepository.delete(cur, produto_id, session["user_id"])
+        return jsonify({"status": "ok"})
+    except Exception:
+        return _bad_request("Erro ao excluir produto.", status=500)
+
+
 @api_bp.route("/produto/atualizar", methods=["POST"])
+@login_required
 def atualizar_produto():
     data = request.get_json(silent=True) or {}
 
@@ -62,7 +66,7 @@ def atualizar_produto():
         ProdutoService.validar(nome, preco, setor=setor)
 
         with db_cursor() as cur:
-            ProdutoRepository.update(cur, produto_id, nome, setor, preco)
+            ProdutoRepository.update(cur, produto_id, nome, setor, preco, session["user_id"])
 
         return jsonify({"status": "ok"})
     except ValueError as e:

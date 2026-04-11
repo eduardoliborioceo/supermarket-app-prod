@@ -2,6 +2,9 @@ import psycopg
 from psycopg.rows import dict_row
 from flask import current_app
 from contextlib import contextmanager
+from authlib.integrations.flask_client import OAuth
+
+oauth = OAuth()
 
 
 def get_db():
@@ -14,13 +17,6 @@ def get_db():
 
 @contextmanager
 def db_cursor():
-    """
-    Abre conexão + cursor e garante commit/rollback e fechamento.
-    Uso:
-        with db_cursor() as cur:
-            cur.execute(...)
-            rows = cur.fetchall()
-    """
     conn = None
     cur = None
     try:

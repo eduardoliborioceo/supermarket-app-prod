@@ -737,3 +737,101 @@ a { color: inherit; }
     .two-cols  { grid-template-columns: 1fr; }
     .produto-total { min-width: auto; }
 }
+
+/* ======================================================
+   USER AVATAR
+====================================================== */
+.user-avatar-wrap {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.user-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(13, 110, 253, 0.25);
+}
+
+/* ======================================================
+   LOGIN PAGE
+====================================================== */
+.login-body {
+    padding-top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100dvh;
+    background: var(--bg);
+}
+
+.login-wrap {
+    width: 100%;
+    max-width: 380px;
+    padding: 24px 16px;
+}
+
+.login-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 40px 28px 36px;
+    text-align: center;
+    box-shadow: var(--shadow);
+}
+
+.login-logo {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    margin-bottom: 16px;
+}
+
+.login-title {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.4px;
+    margin: 0 0 8px;
+}
+
+.login-sub {
+    font-size: 14px;
+    color: var(--muted);
+    margin: 0 0 32px;
+    line-height: 1.5;
+}
+
+.btn-google {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    justify-content: center;
+    padding: 13px 20px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+    transition: box-shadow .15s, transform .1s;
+}
+
+.btn-google:hover {
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12);
+    transform: translateY(-1px);
+}
+
+.btn-google:active {
+    transform: scale(0.98);
+}
+
+.google-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}

@@ -36,6 +36,12 @@
         <button class="icon-btn btn-search" type="button" aria-label="Buscar">
             <i class="fa-solid fa-magnifying-glass"></i>
         </button>
+
+        {% if session.user_foto %}
+        <a href="{{ url_for('auth.logout') }}" class="user-avatar-wrap" title="Sair ({{ session.user_nome }})">
+            <img class="user-avatar" src="{{ session.user_foto }}" alt="{{ session.user_nome }}">
+        </a>
+        {% endif %}
     </div>
 </header>
 
