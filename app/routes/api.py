@@ -26,6 +26,25 @@ def excluir_produto():
         return _bad_request("Erro ao excluir produto.", status=500)
 
 
+@api_bp.route("/produto/adicionar", methods=["POST"])
+def adicionar_produto():
+    data = request.get_json(silent=True) or {}
+    nome = ProdutoService.normalizar_nome(data.get("nome", ""))
+    setor = (data.get("setor") or "").strip()
+    preco = data.get("preco")
+
+    try:
+        preco = float(preco)
+        ProdutoService.validar(nome, preco, setor=setor)
+        with db_cursor() as cur:
+            ProdutoRepository.upsert_by_name(cur, nome, setor, preco)
+        return jsonify({"status": "ok", "nome": nome, "preco": preco, "setor": setor})
+    except ValueError as e:
+        return _bad_request(str(e))
+    except Exception:
+        return _bad_request("Erro ao salvar produto.", status=500)
+
+
 @api_bp.route("/produto/atualizar", methods=["POST"])
 def atualizar_produto():
     data = request.get_json(silent=True) or {}

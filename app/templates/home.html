@@ -127,7 +127,7 @@
             <button type="button" class="modal-x" onclick="fecharModalProduto()" aria-label="Fechar">×</button>
         </div>
 
-        <form method="POST" action="{{ url_for('pages.add_item') }}">
+        <form id="formNovoProduto" method="POST" action="{{ url_for('pages.add_item') }}">
             <label class="field">
                 <span>Nome do produto</span>
                 <input type="text" name="nome" placeholder="Ex: Arroz" required>
@@ -149,7 +149,7 @@
 
             <div class="modal-actions">
                 <button type="button" class="btn-ghost" onclick="fecharModalProduto()">Cancelar</button>
-                <button type="submit" class="btn-primary">Salvar</button>
+                <button type="submit" id="btn-salvar-produto" class="btn-primary">Salvar</button>
             </div>
         </form>
     </div>
@@ -377,6 +377,53 @@ window.addEventListener("appinstalled", () => {
     document.getElementById("btn-instalar").style.display = "none";
 });
 
+function escapeHtml(str) {
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function adicionarCardNaLista(nome, preco, setor) {
+    const categoriaCard = [...document.querySelectorAll(".category-card")]
+        .find(cat => cat.dataset.categoria === setor);
+    if (!categoriaCard) return;
+
+    const items = categoriaCard.querySelector(".category-items");
+    const emptyState = items.querySelector(".empty-state");
+    if (emptyState) emptyState.remove();
+
+    const card = document.createElement("div");
+    card.className = "produto-card";
+    card.dataset.preco = preco;
+    card.innerHTML = `
+        <div class="produto-row">
+            <div class="produto-info">
+                <div class="nome">${escapeHtml(nome)}</div>
+                <div class="produto-sub">
+                    <span class="preco-texto">${formatar(preco)}</span>
+                    <input type="number" class="preco-input" value="${preco}" step="0.01">
+                </div>
+            </div>
+            <div class="produto-total">
+                <strong class="total-produto">${formatar(preco)}</strong>
+            </div>
+        </div>
+        <div class="produto-actions">
+            <div class="qtd">
+                <button class="btn-menos" aria-label="Diminuir">−</button>
+                <span class="qtd-valor">0</span>
+                <button class="btn-mais" aria-label="Aumentar">+</button>
+            </div>
+            <div class="hint">Toque no preço para editar</div>
+        </div>`;
+    items.appendChild(card);
+    ativarEventosProduto(card);
+
+    const badge = categoriaCard.querySelector(".category-badge");
+    if (badge) {
+        const count = items.querySelectorAll(".produto-card").length;
+        badge.textContent = count + (count === 1 ? " item" : " itens");
+    }
+}
+
 window.addEventListener("load", () => {
     const header = document.querySelector(".app-header");
     const kpiBar = document.getElementById("kpi-sticky");
@@ -400,6 +447,45 @@ window.addEventListener("load", () => {
 
     restaurarEstado();
     calcularTotais();
+
+    document.getElementById("formNovoProduto").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const form = this;
+        const btnSalvar = document.getElementById("btn-salvar-produto");
+
+        const nome = form.nome.value.trim();
+        const preco = Number(form.preco.value);
+        const setor = form.setor.value;
+
+        if (!nome || preco <= 0) {
+            alert("Informe um nome válido e preço maior que zero.");
+            return;
+        }
+
+        btnSalvar.disabled = true;
+        btnSalvar.textContent = "Salvando...";
+
+        fetch("/api/produto/adicionar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ nome, preco, setor })
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.status === "ok") {
+                adicionarCardNaLista(res.nome, res.preco, res.setor);
+                fecharModalProduto();
+                form.reset();
+            } else {
+                alert(res.message || "Erro ao salvar.");
+            }
+        })
+        .catch(() => alert("Erro de comunicação com o servidor."))
+        .finally(() => {
+            btnSalvar.disabled = false;
+            btnSalvar.textContent = "Salvar";
+        });
+    });
 });
 </script>
 
