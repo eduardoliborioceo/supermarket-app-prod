@@ -1,4 +1,5 @@
 from flask import Flask
+from werkzeug.middleware.proxy_fix import ProxyFix
 from app.config import Config
 from app.extensions import get_db, oauth
 from app.routes.pages import pages_bp
@@ -78,6 +79,9 @@ def init_db(app):
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+
+    # Necessário para gerar URLs https:// corretas atrás de proxy (Render, Railway, etc.)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
     oauth.init_app(app)
     oauth.register(

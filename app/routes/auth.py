@@ -24,7 +24,13 @@ def login():
 
 @auth_bp.route("/auth/google")
 def google_login():
-    redirect_uri = url_for("auth.google_callback", _external=True)
+    # GOOGLE_REDIRECT_URI pode ser definida como variável de ambiente para
+    # garantir a URI exata registrada no Google Console (ex: em produção)
+    import os
+    redirect_uri = (
+        os.getenv("GOOGLE_REDIRECT_URI")
+        or url_for("auth.google_callback", _external=True)
+    )
     return oauth.google.authorize_redirect(redirect_uri)
 
 
