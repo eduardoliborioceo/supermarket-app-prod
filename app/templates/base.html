@@ -27,7 +27,7 @@
             alt="Supermercado"
         />
         <div class="app-title">
-            <strong>Supermercado</strong>
+            <strong>{{ session.supermercado_nome or 'Supermercado' }}</strong>
             <span class="app-subtitle">{% if page=='produtos' %}Gerenciar produtos{% else %}Lista de compras{% endif %}</span>
         </div>
     </div>
@@ -71,6 +71,11 @@
         <small>Produtos</small>
     </a>
 
+    <a href="{{ url_for('pages.selecionar_supermercado') }}"
+       class="bottom-item {% if page=='selecionar' %}active{% endif %}">
+        <i class="fa-solid fa-store"></i>
+        <small>Mercado</small>
+    </a>
 
 </nav>
 

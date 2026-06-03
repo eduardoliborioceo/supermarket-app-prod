@@ -55,7 +55,15 @@ def google_callback():
     session["user_nome"] = user["nome"]
     session["user_foto"] = user["foto_url"]
 
-    return redirect(url_for("pages.home"))
+    with db_cursor() as cur:
+        from app.repositories.supermercado_repository import SupermercadoRepository
+        supermercado = SupermercadoRepository.get_by_usuario(cur, user["id"])
+
+    if supermercado and supermercado.get("supermercado_nome"):
+        session["supermercado_nome"] = supermercado["supermercado_nome"]
+        session["supermercado_endereco"] = supermercado.get("supermercado_endereco", "")
+
+    return redirect(url_for("pages.selecionar_supermercado"))
 
 
 @auth_bp.route("/logout")
