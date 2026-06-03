@@ -10,6 +10,12 @@
             <h1 class="page-title">Produtos</h1>
             <p class="page-muted">Edite nome, preço e categoria com rapidez.</p>
         </div>
+        <div class="page-hero-actions">
+            <button class="btn-ghost" id="btn-restaurar" onclick="restaurarListaPadrao()">
+                <i class="fa-solid fa-rotate-left"></i>
+                Restaurar lista padrão
+            </button>
+        </div>
     </div>
 
     <div class="admin-grid">
@@ -105,6 +111,31 @@ function salvarProduto(id) {
         }
     })
     .catch(() => alert("Erro de comunicação com o servidor."));
+}
+
+function restaurarListaPadrao() {
+    if (!confirm("Isso vai adicionar todos os produtos padrão que ainda não existem na sua lista. Continuar?")) return;
+
+    const btn = document.getElementById("btn-restaurar");
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Adicionando...';
+
+    fetch("/api/seed-defaults", { method: "POST" })
+        .then(r => r.json())
+        .then(res => {
+            if (res.status === "ok") {
+                window.location.reload();
+            } else {
+                alert("Erro ao restaurar lista. Tente novamente.");
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-rotate-left"></i> Restaurar lista padrão';
+            }
+        })
+        .catch(() => {
+            alert("Erro de conexão. Tente novamente.");
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-rotate-left"></i> Restaurar lista padrão';
+        });
 }
 
 function excluirProduto(id) {
