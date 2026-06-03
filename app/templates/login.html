@@ -31,6 +31,13 @@
             </svg>
             Entrar com Google
         </a>
+
+        <div class="login-or"><span>ou</span></div>
+
+        <button class="btn-install-login" id="btn-instalar" onclick="instalarApp()">
+            <i class="fa-solid fa-arrow-down-to-bracket"></i>
+            Instalar App no celular
+        </button>
     </div>
 
     <div class="login-credit">
@@ -56,9 +63,74 @@
             >
                 <i class="fa-brands fa-instagram"></i>
             </a>
+            <button class="login-credit-install" onclick="instalarApp()" title="Instalar App">
+                <i class="fa-solid fa-arrow-down-to-bracket"></i>
+            </button>
         </div>
     </div>
 </div>
+
+<div class="modal" id="modalInstalarIos">
+    <div class="modal-content">
+        <div class="modal-head">
+            <h3>Instalar no iPhone</h3>
+            <button type="button" class="modal-x" onclick="document.getElementById('modalInstalarIos').style.display='none'" aria-label="Fechar">×</button>
+        </div>
+        <div class="ios-install-steps">
+            <div class="ios-step">
+                <i class="fa-solid fa-arrow-up-from-bracket ios-icon"></i>
+                <p>Toque no botão <strong>Compartilhar</strong> na barra do Safari</p>
+            </div>
+            <div class="ios-step">
+                <i class="fa-solid fa-plus-square ios-icon"></i>
+                <p>Role para baixo e toque em <strong>"Adicionar à Tela de Início"</strong></p>
+            </div>
+            <div class="ios-step">
+                <i class="fa-solid fa-check ios-icon"></i>
+                <p>Toque em <strong>Adicionar</strong> no canto superior direito</p>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn-primary" onclick="document.getElementById('modalInstalarIos').style.display='none'">Entendi</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let deferredPrompt = null;
+
+function isIos() {
+    return /iphone|ipad|ipod/i.test(navigator.userAgent);
+}
+
+function isStandalone() {
+    return navigator.standalone || window.matchMedia("(display-mode: standalone)").matches;
+}
+
+function instalarApp() {
+    if (isStandalone()) return;
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+        return;
+    }
+    if (isIos()) {
+        document.getElementById("modalInstalarIos").style.display = "flex";
+    }
+}
+
+window.addEventListener("beforeinstallprompt", e => {
+    e.preventDefault();
+    deferredPrompt = e;
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    if (isStandalone()) {
+        const btn = document.getElementById("btn-instalar");
+        if (btn) btn.style.display = "none";
+    }
+});
+</script>
 
 </body>
 </html>
