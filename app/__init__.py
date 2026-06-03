@@ -1,10 +1,13 @@
-from flask import Flask
+import time
+from flask import Flask, make_response
 from werkzeug.middleware.proxy_fix import ProxyFix
 from app.config import Config
 from app.extensions import get_db, oauth
 from app.routes.pages import pages_bp
 from app.routes.api import api_bp
 from app.routes.auth import auth_bp
+
+STARTUP_VERSION = str(int(time.time()))
 
 
 def init_db(app):
@@ -108,6 +111,66 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(pages_bp)
     app.register_blueprint(api_bp)
+
+    @app.route("/sw.js")
+    def service_worker():
+        sw_content = f"""/* cache version: {STARTUP_VERSION} */
+const CACHE_NAME = "supermercado-{STARTUP_VERSION}";
+
+const STATIC_ASSETS = [
+  "/static/css/style.css",
+  "/static/js/main.js",
+  "/static/manifest.webmanifest"
+];
+
+self.addEventListener("install", (event) => {{
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
+  );
+  self.skipWaiting();
+}});
+
+self.addEventListener("activate", (event) => {{
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(keys.map((k) => (k !== CACHE_NAME ? caches.delete(k) : null)))
+    )
+  );
+  self.clients.claim();
+}});
+
+self.addEventListener("fetch", (event) => {{
+  const req = event.request;
+  const url = new URL(req.url);
+
+  if (url.origin !== self.location.origin) return;
+
+  if (url.pathname.startsWith("/static/")) {{
+    event.respondWith(
+      caches.match(req).then((cached) => cached || fetch(req).then((res) => {{
+        const copy = res.clone();
+        caches.open(CACHE_NAME).then((c) => c.put(req, copy));
+        return res;
+      }}))
+    );
+    return;
+  }}
+
+  event.respondWith(
+    fetch(req)
+      .then((res) => {{
+        const copy = res.clone();
+        caches.open(CACHE_NAME).then((c) => c.put(req, copy));
+        return res;
+      }})
+      .catch(() => caches.match(req).then((cached) => cached || caches.match("/")))
+  );
+}});
+"""
+        resp = make_response(sw_content, 200)
+        resp.headers["Content-Type"] = "application/javascript"
+        resp.headers["Cache-Control"] = "no-store"
+        return resp
 
     try:
         init_db(app)
