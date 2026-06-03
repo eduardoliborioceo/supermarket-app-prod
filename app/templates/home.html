@@ -58,10 +58,10 @@
                     <span class="category-badge">
                         {{ (produtos | selectattr("setor", "equalto", categoria) | list | length) }} itens
                     </span>
+                    <span class="category-total">R$ 0,00</span>
                 </div>
 
                 <div class="category-header-right">
-                    <span class="category-total" style="display:none">R$ 0,00</span>
                     <button class="icon-pill" onclick="abrirModalProduto('{{ categoria }}')" aria-label="Adicionar item">
                         <i class="fa-solid fa-plus"></i>
                     </button>
@@ -274,7 +274,6 @@ function calcularTotais() {
         const catTotalEl = catCard.querySelector(".category-total");
         if (catTotalEl) {
             catTotalEl.innerText = formatar(catTotal);
-            catTotalEl.style.display = catTotal > 0 ? "inline-flex" : "none";
         }
     });
 
