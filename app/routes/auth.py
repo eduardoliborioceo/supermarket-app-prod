@@ -2,6 +2,7 @@ from functools import wraps
 from flask import Blueprint, redirect, url_for, session, render_template, current_app
 from app.extensions import oauth, db_cursor
 from app.repositories.usuario_repository import UsuarioRepository
+from app.services.itens_padrao_service import ItensPadraoService
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -50,6 +51,7 @@ def google_callback():
             nome=user_info.get("name", ""),
             foto_url=user_info.get("picture", ""),
         )
+        ItensPadraoService.popular_se_novo(cur, user["id"])
 
     session["user_id"] = user["id"]
     session["user_nome"] = user["nome"]

@@ -35,3 +35,20 @@ class ProdutoRepository:
             "DELETE FROM produtos WHERE id = %s AND usuario_id = %s",
             (produto_id, usuario_id)
         )
+
+    @staticmethod
+    def count_by_usuario(cur, usuario_id):
+        cur.execute(
+            "SELECT COUNT(*) AS total FROM produtos WHERE usuario_id = %s",
+            (usuario_id,)
+        )
+        row = cur.fetchone()
+        return row["total"] if row else 0
+
+    @staticmethod
+    def bulk_insert_defaults(cur, usuario_id, itens):
+        cur.executemany("""
+            INSERT INTO produtos (nome, setor, ultimo_preco, usuario_id)
+            VALUES (%s, %s, 0, %s)
+            ON CONFLICT (nome, usuario_id) DO NOTHING
+        """, [(nome, setor, usuario_id) for nome, setor in itens])
