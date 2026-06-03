@@ -2,7 +2,7 @@
    - Cache-first for static assets
    - Network-first for HTML pages (fallback to cache)
 */
-const CACHE_NAME = "supermercado-v1";
+const CACHE_NAME = "supermercado-v2";
 
 const STATIC_ASSETS = [
   "/",
