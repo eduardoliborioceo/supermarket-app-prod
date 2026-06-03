@@ -4,6 +4,7 @@ from app.repositories.produto_repository import ProdutoRepository
 from app.repositories.supermercado_repository import SupermercadoRepository
 from app.services.produto_service import ProdutoService
 from app.services.supermercado_service import SupermercadoService
+from app.services.itens_padrao_service import ItensPadraoService
 from app.routes.auth import login_required
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
@@ -11,6 +12,14 @@ api_bp = Blueprint("api", __name__, url_prefix="/api")
 
 def _bad_request(msg, status=400):
     return jsonify({"status": "error", "message": msg}), status
+
+
+@api_bp.route("/seed-defaults", methods=["POST"])
+@login_required
+def seed_defaults():
+    with db_cursor() as cur:
+        ItensPadraoService.popular_todos(cur, session["user_id"])
+    return jsonify({"status": "ok"})
 
 
 @api_bp.route("/supermercados/buscar")
