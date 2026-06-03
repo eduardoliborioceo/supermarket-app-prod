@@ -345,6 +345,26 @@ a { color: inherit; }
     background: rgba(15, 23, 42, 0.02);
 }
 
+.category-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.category-total {
+    display: inline-flex;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #198754;
+    background: rgba(25, 135, 84, 0.10);
+    border: 1px solid rgba(25, 135, 84, 0.20);
+    padding: 5px 10px;
+    border-radius: 999px;
+    transition: opacity .2s;
+}
+
 .icon-pill {
     width: 40px;
     height: 40px;

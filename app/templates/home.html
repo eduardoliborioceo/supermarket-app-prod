@@ -60,9 +60,12 @@
                     </span>
                 </div>
 
-                <button class="icon-pill" onclick="abrirModalProduto('{{ categoria }}')" aria-label="Adicionar item">
-                    <i class="fa-solid fa-plus"></i>
-                </button>
+                <div class="category-header-right">
+                    <span class="category-total" style="display:none">R$ 0,00</span>
+                    <button class="icon-pill" onclick="abrirModalProduto('{{ categoria }}')" aria-label="Adicionar item">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
             </div>
 
             <div class="category-items">
@@ -257,10 +260,22 @@ function instalarApp() {
 function calcularTotais() {
     let total = 0;
 
-    document.querySelectorAll(".produto-card").forEach(card => {
-        const preco = Number(card.dataset.preco) || 0;
-        const qtd = Number(card.querySelector(".qtd-valor").innerText) || 0;
-        total += preco * qtd;
+    document.querySelectorAll(".category-card").forEach(catCard => {
+        let catTotal = 0;
+
+        catCard.querySelectorAll(".produto-card").forEach(card => {
+            const preco = Number(card.dataset.preco) || 0;
+            const qtd = Number(card.querySelector(".qtd-valor").innerText) || 0;
+            catTotal += preco * qtd;
+        });
+
+        total += catTotal;
+
+        const catTotalEl = catCard.querySelector(".category-total");
+        if (catTotalEl) {
+            catTotalEl.innerText = formatar(catTotal);
+            catTotalEl.style.display = catTotal > 0 ? "inline-flex" : "none";
+        }
     });
 
     document.getElementById("total-atual").innerText = formatar(total);
