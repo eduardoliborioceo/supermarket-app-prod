@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Onde você vai fazer compras? — Supermercado</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="select-mkt-body">
+
+<div class="select-mkt-wrap">
+
+    <!-- Hero header -->
+    <div class="select-mkt-hero">
+        <div class="select-mkt-avatar-wrap">
+            {% if session.user_foto %}
+            <img class="select-mkt-avatar" src="{{ session.user_foto }}" alt="{{ session.user_nome }}">
+            {% else %}
+            <div class="select-mkt-avatar select-mkt-avatar-fallback">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            {% endif %}
+        </div>
+        <div>
+            <p class="select-mkt-greeting">Olá, {{ session.user_nome.split()[0] if session.user_nome else "usuário" }} 👋</p>
+            <h1 class="select-mkt-headline">Onde você vai<br>fazer compras hoje?</h1>
+        </div>
+    </div>
+
+    <!-- Search card -->
+    <div class="select-mkt-card">
+
+        {% if supermercado and supermercado.supermercado_nome %}
+        <div class="select-mkt-current" id="current-wrap">
+            <div class="select-mkt-current-label">
+                <i class="fa-solid fa-circle-check"></i>
+                Última seleção
+            </div>
+            <div class="select-mkt-current-info">
+                <strong>{{ supermercado.supermercado_nome }}</strong>
+                {% if supermercado.supermercado_endereco %}
+                <span>{{ supermercado.supermercado_endereco }}</span>
+                {% endif %}
+            </div>
+            <button class="btn-use-this" id="btn-use-last"
+                data-nome="{{ supermercado.supermercado_nome }}"
+                data-endereco="{{ supermercado.supermercado_endereco or '' }}"
+                data-place="{{ supermercado.supermercado_place_id or '' }}">
+                Usar este <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+        {% endif %}
+
+        <div class="select-mkt-search-row">
+            <div class="select-mkt-search-box">
+                <i class="fa-solid fa-magnifying-glass select-mkt-search-icon"></i>
+                <input
+                    type="text"
+                    id="input-busca"
+                    class="select-mkt-input"
+                    placeholder="Buscar supermercado..."
+                    autocomplete="off"
+                    autocorrect="off"
+                >
+            </div>
+            <button class="btn-gps" id="btn-gps" title="Usar minha localização">
+                <i class="fa-solid fa-location-crosshairs"></i>
+            </button>
+        </div>
+
+        <p class="select-mkt-hint" id="search-hint">
+            <i class="fa-solid fa-circle-info"></i>
+            Digite o nome ou use o GPS para encontrar mercados próximos.
+        </p>
+
+        <!-- Resultados -->
+        <div id="results-wrap" class="select-mkt-results" style="display:none"></div>
+
+        <!-- Input manual (sem API key) -->
+        <div id="manual-wrap" class="select-mkt-manual" style="display:none">
+            <label class="field">
+                <span>Nome do supermercado</span>
+                <input type="text" id="input-manual-nome" placeholder="Ex: Supermercado Ideal">
+            </label>
+            <button class="btn-primary btn-full" id="btn-confirmar-manual">
+                <i class="fa-solid fa-check"></i> Confirmar
+            </button>
+        </div>
+
+    </div>
+
+</div>
+
+<div class="select-mkt-overlay" id="overlay" style="display:none">
+    <div class="select-mkt-spinner">
+        <i class="fa-solid fa-circle-notch fa-spin"></i>
+    </div>
+</div>
+
+<script>
+const HAS_API = {{ 'true' if has_api else 'false' }};
+let debounceTimer = null;
+
+function showOverlay() {
+    document.getElementById("overlay").style.display = "flex";
+}
+function hideOverlay() {
+    document.getElementById("overlay").style.display = "none";
+}
+
+function setHint(msg, type = "info") {
+    const el = document.getElementById("search-hint");
+    const icons = { info: "fa-circle-info", error: "fa-triangle-exclamation", ok: "fa-circle-check" };
+    el.innerHTML = `<i class="fa-solid ${icons[type] || icons.info}"></i> ${msg}`;
+    el.style.display = "flex";
+}
+
+function selecionarMercado(nome, endereco, placeId) {
+    showOverlay();
+    fetch("/api/supermercado/selecionar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome, endereco, place_id: placeId })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.status === "ok") {
+            window.location.href = "/";
+        } else {
+            hideOverlay();
+            setHint(res.message || "Erro ao salvar. Tente novamente.", "error");
+        }
+    })
+    .catch(() => {
+        hideOverlay();
+        setHint("Erro de conexão. Tente novamente.", "error");
+    });
+}
+
+function renderResults(results) {
+    const wrap = document.getElementById("results-wrap");
+    if (!results.length) {
+        wrap.innerHTML = `<div class="select-mkt-empty">
+            <i class="fa-solid fa-store-slash"></i>
+            <p>Nenhum supermercado encontrado.<br>Tente outro nome ou cidade.</p>
+        </div>`;
+        wrap.style.display = "block";
+        return;
+    }
+
+    wrap.innerHTML = results.map((r, i) => `
+        <div class="select-mkt-result" data-index="${i}">
+            <div class="result-icon"><i class="fa-solid fa-store"></i></div>
+            <div class="result-info">
+                <strong class="result-nome">${escHtml(r.nome)}</strong>
+                ${r.endereco ? `<span class="result-end">${escHtml(r.endereco)}</span>` : ""}
+                ${r.rating ? `<span class="result-rating"><i class="fa-solid fa-star"></i> ${r.rating}</span>` : ""}
+                ${r.aberto === true ? `<span class="result-badge open">Aberto</span>` : r.aberto === false ? `<span class="result-badge closed">Fechado</span>` : ""}
+            </div>
+            <button class="btn-use-this"
+                onclick="selecionarMercado(${JSON.stringify(r.nome)}, ${JSON.stringify(r.endereco || '')}, ${JSON.stringify(r.place_id || '')})">
+                Usar <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+    `).join("");
+    wrap.style.display = "block";
+}
+
+function buscar(q, lat, lng) {
+    const params = new URLSearchParams();
+    if (q) params.set("q", q);
+    if (lat) params.set("lat", lat);
+    if (lng) params.set("lng", lng);
+
+    setHint("Buscando...", "info");
+    document.getElementById("results-wrap").style.display = "none";
+
+    fetch(`/api/supermercados/buscar?${params}`)
+        .then(r => r.json())
+        .then(data => renderResults(data.results || []))
+        .catch(() => setHint("Erro ao buscar. Verifique sua conexão.", "error"));
+}
+
+function escHtml(str) {
+    return (str || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+document.getElementById("input-busca").addEventListener("input", function () {
+    clearTimeout(debounceTimer);
+    const q = this.value.trim();
+    if (q.length < 2) return;
+    debounceTimer = setTimeout(() => buscar(q, null, null), 450);
+});
+
+document.getElementById("btn-gps").addEventListener("click", function () {
+    if (!navigator.geolocation) {
+        setHint("GPS não disponível neste dispositivo.", "error");
+        return;
+    }
+    const btn = this;
+    btn.classList.add("loading");
+    setHint("Obtendo localização...", "info");
+    navigator.geolocation.getCurrentPosition(
+        pos => {
+            btn.classList.remove("loading");
+            buscar("", pos.coords.latitude, pos.coords.longitude);
+        },
+        () => {
+            btn.classList.remove("loading");
+            setHint("Não foi possível obter a localização. Permita o acesso ao GPS.", "error");
+        },
+        { timeout: 8000 }
+    );
+});
+
+const btnUseLast = document.getElementById("btn-use-last");
+if (btnUseLast) {
+    btnUseLast.addEventListener("click", function () {
+        selecionarMercado(this.dataset.nome, this.dataset.endereco, this.dataset.place);
+    });
+}
+
+if (!HAS_API) {
+    document.getElementById("search-hint").style.display = "none";
+    document.getElementById("manual-wrap").style.display = "block";
+    document.querySelector(".select-mkt-search-row").style.display = "none";
+
+    document.getElementById("btn-confirmar-manual").addEventListener("click", function () {
+        const nome = document.getElementById("input-manual-nome").value.trim();
+        if (!nome) { alert("Informe o nome do supermercado."); return; }
+        selecionarMercado(nome, "", "");
+    });
+}
+</script>
+
+</body>
+</html>

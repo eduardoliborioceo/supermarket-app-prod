@@ -71,6 +71,19 @@ def init_db(app):
             END $$;
         """)
 
+        cur.execute("""
+            ALTER TABLE usuarios
+            ADD COLUMN IF NOT EXISTS supermercado_nome TEXT;
+        """)
+        cur.execute("""
+            ALTER TABLE usuarios
+            ADD COLUMN IF NOT EXISTS supermercado_endereco TEXT;
+        """)
+        cur.execute("""
+            ALTER TABLE usuarios
+            ADD COLUMN IF NOT EXISTS supermercado_place_id TEXT;
+        """)
+
         conn.commit()
         cur.close()
         conn.close()

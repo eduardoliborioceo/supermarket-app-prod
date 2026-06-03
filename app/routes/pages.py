@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from app.extensions import db_cursor
 from app.repositories.produto_repository import ProdutoRepository
+from app.repositories.supermercado_repository import SupermercadoRepository
 from app.services.produto_service import ProdutoService
 from app.routes.auth import login_required
 
@@ -39,6 +40,20 @@ def produtos():
         produtos=produtos,
         categorias=CATEGORIAS_PADRAO,
         page="produtos"
+    )
+
+
+@pages_bp.route("/selecionar-supermercado")
+@login_required
+def selecionar_supermercado():
+    from flask import current_app
+    with db_cursor() as cur:
+        supermercado = SupermercadoRepository.get_by_usuario(cur, session["user_id"])
+    has_api = bool(current_app.config.get("GOOGLE_MAPS_API_KEY"))
+    return render_template(
+        "selecionar_supermercado.html",
+        supermercado=supermercado,
+        has_api=has_api,
     )
 
 
