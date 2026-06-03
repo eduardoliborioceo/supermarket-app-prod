@@ -21,13 +21,13 @@ def buscar_supermercados():
     lng = request.args.get("lng")
 
     if lat and lng and not q:
-        results = SupermercadoService.buscar_por_localizacao(lat, lng)
+        results, google_status = SupermercadoService.buscar_por_localizacao(lat, lng)
     elif q:
-        results = SupermercadoService.buscar_por_texto(q, lat, lng)
+        results, google_status = SupermercadoService.buscar_por_texto(q, lat, lng)
     else:
-        results = []
+        return jsonify({"results": [], "google_status": "no_query"})
 
-    return jsonify({"results": results})
+    return jsonify({"results": results, "google_status": google_status})
 
 
 @api_bp.route("/supermercado/selecionar", methods=["POST"])

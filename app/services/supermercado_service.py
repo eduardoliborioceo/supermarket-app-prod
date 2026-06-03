@@ -10,11 +10,10 @@ class SupermercadoService:
     def buscar_por_texto(query, lat=None, lng=None):
         api_key = current_app.config.get("GOOGLE_MAPS_API_KEY")
         if not api_key:
-            return []
+            return [], "sem_chave"
 
         params = {
             "query": f"supermercado {query}".strip(),
-            "type": "supermarket",
             "language": "pt-BR",
             "key": api_key,
         }
@@ -26,16 +25,20 @@ class SupermercadoService:
             resp = requests.get(PLACES_TEXT_SEARCH_URL, params=params, timeout=6)
             resp.raise_for_status()
             data = resp.json()
-        except Exception:
-            return []
+        except Exception as e:
+            return [], str(e)
 
-        return SupermercadoService._normalizar(data.get("results", []))
+        status = data.get("status", "UNKNOWN")
+        if status not in ("OK", "ZERO_RESULTS"):
+            return [], status
+
+        return SupermercadoService._normalizar(data.get("results", [])), status
 
     @staticmethod
     def buscar_por_localizacao(lat, lng):
         api_key = current_app.config.get("GOOGLE_MAPS_API_KEY")
         if not api_key:
-            return []
+            return [], "sem_chave"
 
         params = {
             "location": f"{lat},{lng}",
@@ -49,10 +52,14 @@ class SupermercadoService:
             resp = requests.get(PLACES_NEARBY_URL, params=params, timeout=6)
             resp.raise_for_status()
             data = resp.json()
-        except Exception:
-            return []
+        except Exception as e:
+            return [], str(e)
 
-        return SupermercadoService._normalizar(data.get("results", []))
+        status = data.get("status", "UNKNOWN")
+        if status not in ("OK", "ZERO_RESULTS"):
+            return [], status
+
+        return SupermercadoService._normalizar(data.get("results", [])), status
 
     @staticmethod
     def _normalizar(places):
