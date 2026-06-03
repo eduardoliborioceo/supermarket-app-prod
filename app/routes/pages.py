@@ -39,10 +39,14 @@ def produtos():
     with db_cursor() as cur:
         produtos = ProdutoRepository.list_all(cur, session["user_id"])
 
+    setores_db = set(p["setor"] for p in produtos)
+    extra = sorted(s for s in setores_db if s not in CATEGORIAS_PADRAO)
+    categorias = CATEGORIAS_PADRAO + extra
+
     return render_template(
         "produtos.html",
         produtos=produtos,
-        categorias=CATEGORIAS_PADRAO,
+        categorias=categorias,
         page="produtos"
     )
 
