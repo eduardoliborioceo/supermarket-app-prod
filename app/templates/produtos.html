@@ -3,70 +3,106 @@
 
 {% block content %}
 
+<div id="toast-container"></div>
+
 <section class="page-shell">
 
     <div class="page-hero">
         <div class="page-hero-left">
             <h1 class="page-title">Produtos</h1>
-            <p class="page-muted">Edite nome, preço e categoria com rapidez.</p>
+            <p class="page-muted">
+                {{ produtos | length }} produto{{ 's' if produtos | length != 1 else '' }}
+                em {{ categorias | length }} categoria{{ 's' if categorias | length != 1 else '' }}
+            </p>
         </div>
         <div class="page-hero-actions">
             <button class="btn-ghost" id="btn-restaurar" onclick="restaurarListaPadrao()">
                 <i class="fa-solid fa-rotate-left"></i>
-                Restaurar lista padrão
+                Restaurar padrão
             </button>
         </div>
     </div>
 
-    <div class="admin-grid">
-        {% for p in produtos %}
-        <div class="admin-card" data-id="{{ p.id }}">
+    <div class="prod-controls">
+        <button class="btn-text" onclick="expandirTodos()">
+            <i class="fa-solid fa-angles-down"></i> Expandir tudo
+        </button>
+        <button class="btn-text" onclick="recolherTodos()">
+            <i class="fa-solid fa-angles-up"></i> Recolher tudo
+        </button>
+    </div>
 
-            <div class="admin-card-head">
-                <span class="admin-pill">ID #{{ p.id }}</span>
-                <span class="admin-muted">Último preço: R$ {{ "%.2f"|format(p.ultimo_preco) }}</span>
-            </div>
+    <div class="cat-list">
+        {% for categoria in categorias %}
+        {% set prods = produtos | selectattr("setor", "equalto", categoria) | list %}
+        <div class="cat-section">
 
-            <label class="field">
-                <span>Nome</span>
-                <input class="produto-nome"
-                       value="{{ p.nome }}"
-                       placeholder="Nome do produto">
-            </label>
+            <button class="cat-toggle collapsed" onclick="toggleCat(this)" type="button">
+                <div class="cat-toggle-left">
+                    <i class="fa-solid fa-chevron-right cat-chevron"></i>
+                    <span class="cat-nome">{{ categoria }}</span>
+                    <span class="cat-pill">{{ prods | length }}</span>
+                </div>
+            </button>
 
-            <div class="two-cols">
-                <label class="field">
-                    <span>Preço</span>
-                    <input class="produto-preco"
-                           type="number"
-                           step="0.01"
-                           value="{{ "%.2f"|format(p.ultimo_preco) }}"
-                           placeholder="Preço">
-                </label>
+            <div class="cat-items">
+                {% for p in prods %}
+                <div class="admin-card" data-id="{{ p.id }}">
 
-                <label class="field">
-                    <span>Categoria</span>
-                    <select class="produto-categoria">
-                        {% for categoria in categorias %}
-                        <option value="{{ categoria }}"
-                            {% if p.setor == categoria %}selected{% endif %}>
-                            {{ categoria }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </label>
-            </div>
+                    <div class="admin-card-head">
+                        <span class="admin-pill">#{{ p.id }}</span>
+                        <span class="admin-muted">
+                            {% if p.ultimo_preco > 0 %}
+                                R$ {{ "%.2f"|format(p.ultimo_preco) }}
+                            {% else %}
+                                sem preço
+                            {% endif %}
+                        </span>
+                    </div>
 
-            <div class="admin-actions">
-                <button class="btn-primary" onclick="salvarProduto({{ p.id }})">
-                    <i class="fa-solid fa-floppy-disk"></i>
-                    Salvar
-                </button>
+                    <label class="field">
+                        <span>Nome</span>
+                        <input class="produto-nome" value="{{ p.nome }}" placeholder="Nome do produto">
+                    </label>
 
-                <button class="btn-danger" onclick="excluirProduto({{ p.id }})">
-                    <i class="fa-solid fa-trash"></i>
-                    Excluir
-                </button>
+                    <div class="two-cols">
+                        <label class="field">
+                            <span>Preço (R$)</span>
+                            <input class="produto-preco" type="number" step="0.01"
+                                   value="{{ "%.2f"|format(p.ultimo_preco) }}" placeholder="0,00">
+                        </label>
+
+                        <label class="field">
+                            <span>Categoria</span>
+                            <select class="produto-categoria">
+                                {% for cat in categorias %}
+                                <option value="{{ cat }}" {% if p.setor == cat %}selected{% endif %}>{{ cat }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                    </div>
+
+                    <div class="admin-actions">
+                        <button class="btn-primary" onclick="salvarProduto({{ p.id }})">
+                            <i class="fa-solid fa-floppy-disk"></i> Salvar
+                        </button>
+                        <button class="btn-danger" onclick="excluirProduto({{ p.id }})">
+                            <i class="fa-solid fa-trash"></i> Excluir
+                        </button>
+                    </div>
+
+                </div>
+                {% endfor %}
+
+                {% if not prods %}
+                <div class="empty-state">
+                    <i class="fa-solid fa-box-open"></i>
+                    <div>
+                        <strong>Nenhum produto</strong>
+                        <p>Use "Restaurar padrão" para adicionar produtos.</p>
+                    </div>
+                </div>
+                {% endif %}
             </div>
 
         </div>
@@ -76,41 +112,99 @@
 </section>
 
 
-<!-- ================= JS (seu, mantido) ================= -->
 <script>
+function toggleCat(btn) {
+    const section = btn.closest(".cat-section");
+    const items = section.querySelector(".cat-items");
+    const collapsed = btn.classList.toggle("collapsed");
+    items.classList.toggle("open", !collapsed);
+}
+
+function expandirTodos() {
+    document.querySelectorAll(".cat-toggle.collapsed").forEach(btn => {
+        btn.classList.remove("collapsed");
+        btn.closest(".cat-section").querySelector(".cat-items").classList.add("open");
+    });
+}
+
+function recolherTodos() {
+    document.querySelectorAll(".cat-toggle:not(.collapsed)").forEach(btn => {
+        btn.classList.add("collapsed");
+        btn.closest(".cat-section").querySelector(".cat-items").classList.remove("open");
+    });
+}
+
+function showToast(msg, tipo) {
+    const c = document.getElementById("toast-container");
+    const t = document.createElement("div");
+    t.className = "toast" + (tipo === "erro" ? " toast-erro" : " toast-ok");
+    t.innerHTML = (tipo === "erro"
+        ? '<i class="fa-solid fa-circle-xmark"></i> '
+        : '<i class="fa-solid fa-circle-check"></i> ') + msg;
+    c.appendChild(t);
+    requestAnimationFrame(() => t.classList.add("show"));
+    setTimeout(() => {
+        t.classList.remove("show");
+        setTimeout(() => t.remove(), 280);
+    }, 2800);
+}
+
 function salvarProduto(id) {
     const card = document.querySelector(`[data-id="${id}"]`);
     if (!card) return;
 
-    const nome  = card.querySelector(".produto-nome").value.trim();
+    const nome = card.querySelector(".produto-nome").value.trim();
     const preco = Number(card.querySelector(".produto-preco").value);
     const setor = card.querySelector(".produto-categoria").value;
 
-    if (!nome) {
-        alert("Informe um nome válido.");
-        return;
-    }
+    if (!nome) { showToast("Informe um nome válido.", "erro"); return; }
+    if (preco < 0) { showToast("Preço não pode ser negativo.", "erro"); return; }
 
     fetch("/api/produto/atualizar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            id: id,
-            nome: nome,
-            preco: preco,
-            setor: setor
-        })
+        body: JSON.stringify({ id, nome, preco, setor })
     })
     .then(r => r.json())
     .then(res => {
         if (res.status === "ok") {
             card.classList.add("saved");
-            setTimeout(() => card.classList.remove("saved"), 900);
+            setTimeout(() => card.classList.remove("saved"), 1000);
+            const muted = card.querySelector(".admin-muted");
+            if (muted) muted.textContent = preco > 0
+                ? "R$ " + preco.toFixed(2).replace(".", ",")
+                : "sem preço";
+            showToast("Produto salvo!");
         } else {
-            alert(res.message || "Erro ao salvar produto.");
+            showToast(res.message || "Erro ao salvar.", "erro");
         }
     })
-    .catch(() => alert("Erro de comunicação com o servidor."));
+    .catch(() => showToast("Erro de comunicação.", "erro"));
+}
+
+function excluirProduto(id) {
+    if (!confirm("Deseja realmente excluir este produto?")) return;
+
+    fetch("/api/produto/excluir", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.status === "ok") {
+            const card = document.querySelector(`[data-id="${id}"]`);
+            if (card) {
+                card.style.transition = "opacity 0.2s";
+                card.style.opacity = "0";
+                setTimeout(() => card.remove(), 200);
+            }
+            showToast("Produto excluído.");
+        } else {
+            showToast(res.message || "Erro ao excluir.", "erro");
+        }
+    })
+    .catch(() => showToast("Erro de comunicação.", "erro"));
 }
 
 function restaurarListaPadrao() {
@@ -126,36 +220,16 @@ function restaurarListaPadrao() {
             if (res.status === "ok") {
                 window.location.reload();
             } else {
-                alert("Erro ao restaurar lista. Tente novamente.");
+                showToast("Erro ao restaurar lista.", "erro");
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-rotate-left"></i> Restaurar lista padrão';
+                btn.innerHTML = '<i class="fa-solid fa-rotate-left"></i> Restaurar padrão';
             }
         })
         .catch(() => {
-            alert("Erro de conexão. Tente novamente.");
+            showToast("Erro de conexão.", "erro");
             btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-rotate-left"></i> Restaurar lista padrão';
+            btn.innerHTML = '<i class="fa-solid fa-rotate-left"></i> Restaurar padrão';
         });
-}
-
-function excluirProduto(id) {
-    if (!confirm("Deseja realmente excluir este produto?")) return;
-
-    fetch("/api/produto/excluir", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: id })
-    })
-    .then(r => r.json())
-    .then(res => {
-        if (res.status === "ok") {
-            const card = document.querySelector(`[data-id="${id}"]`);
-            if (card) card.remove();
-        } else {
-            alert(res.message || "Erro ao excluir produto.");
-        }
-    })
-    .catch(() => alert("Erro de comunicação com o servidor."));
 }
 </script>
 
