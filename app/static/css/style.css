@@ -907,10 +907,23 @@ a { color: inherit; }
     font-weight: 500;
 }
 
-.login-credit-company {
+.login-credit-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid rgba(15, 23, 42, 0.12);
+    flex-shrink: 0;
+}
+
+.login-credit-name {
     font-weight: 700;
     color: var(--text);
     letter-spacing: 0.4px;
+}
+
+.login-credit-role {
+    color: var(--muted);
 }
 
 .login-credit-dot {
