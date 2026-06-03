@@ -7,7 +7,7 @@ class ProdutoService:
         if preco is None:
             raise ValueError("Preço obrigatório")
 
-        if float(preco) <= 0:
+        if float(preco) < 0:
             raise ValueError("Preço inválido")
 
         if setor is not None and (not setor or not str(setor).strip()):

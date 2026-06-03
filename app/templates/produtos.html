@@ -86,8 +86,8 @@ function salvarProduto(id) {
     const preco = Number(card.querySelector(".produto-preco").value);
     const setor = card.querySelector(".produto-categoria").value;
 
-    if (!nome || preco <= 0) {
-        alert("Informe um nome válido e um preço maior que zero.");
+    if (!nome) {
+        alert("Informe um nome válido.");
         return;
     }
 

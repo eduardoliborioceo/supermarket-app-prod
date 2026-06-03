@@ -360,11 +360,9 @@ function restaurarEstado() {
         const nome = card.querySelector(".nome").innerText;
         const salvo = estado.produtos.find(p => p.nome === nome);
         if (salvo) {
-            card.dataset.preco = salvo.preco;
+            const preco = Number(card.dataset.preco) || 0;
             card.querySelector(".qtd-valor").innerText = salvo.qtd;
-            card.querySelector(".preco-texto").innerText = formatar(salvo.preco);
-            card.querySelector(".total-produto").innerText =
-                formatar(salvo.preco * salvo.qtd);
+            card.querySelector(".total-produto").innerText = formatar(preco * salvo.qtd);
         }
     });
 
