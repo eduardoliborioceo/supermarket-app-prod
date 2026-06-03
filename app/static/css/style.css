@@ -182,11 +182,17 @@ a { color: inherit; }
 }
 
 .kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
     max-width: 980px;
     margin: 0 auto;
+}
+
+.kpi-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
 }
 
 .kpi-card {
@@ -308,12 +314,21 @@ a { color: inherit; }
 }
 
 .category-card {
+    --cat-color: #3b82f6;
+    --cat-bg: rgba(59, 130, 246, 0.07);
+
     background: var(--card);
     border: 1px solid var(--border);
+    border-top: 3px solid var(--cat-color);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     overflow: hidden;
 }
+
+.category-card:nth-child(4n+1) { --cat-color: #3b82f6; --cat-bg: rgba(59, 130, 246, 0.07); }
+.category-card:nth-child(4n+2) { --cat-color: #f59e0b; --cat-bg: rgba(245, 158, 11, 0.07); }
+.category-card:nth-child(4n+3) { --cat-color: #10b981; --cat-bg: rgba(16, 185, 129, 0.07); }
+.category-card:nth-child(4n)   { --cat-color: #8b5cf6; --cat-bg: rgba(139, 92, 246, 0.07); }
 
 .category-header {
     padding: 14px 14px 10px;
@@ -321,6 +336,8 @@ a { color: inherit; }
     justify-content: space-between;
     align-items: center;
     gap: 10px;
+    background: var(--cat-bg);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .category-title {
@@ -334,6 +351,7 @@ a { color: inherit; }
     margin: 0;
     font-size: 16px;
     letter-spacing: -0.2px;
+    color: var(--cat-color);
 }
 
 .category-badge {
@@ -357,27 +375,28 @@ a { color: inherit; }
     align-items: center;
     font-size: 13px;
     font-weight: 700;
-    color: #198754;
-    background: rgba(25, 135, 84, 0.10);
-    border: 1px solid rgba(25, 135, 84, 0.20);
+    color: var(--cat-color);
+    background: var(--cat-bg);
+    border: 1px solid var(--cat-color);
     padding: 5px 10px;
     border-radius: 999px;
     transition: opacity .2s;
+    opacity: 0.85;
 }
 
 .icon-pill {
     width: 40px;
     height: 40px;
     border-radius: 999px;
-    border: 1px solid rgba(13,110,253,0.22);
-    background: rgba(13,110,253,0.10);
+    border: 1px solid var(--cat-color);
+    background: var(--cat-bg);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
 }
 
-.icon-pill i { color: var(--brand); }
+.icon-pill i { color: var(--cat-color); }
 
 .category-items {
     padding: 0 14px 14px;
@@ -760,8 +779,7 @@ a { color: inherit; }
 }
 
 @media (max-width: 720px) {
-    .kpi-grid { grid-template-columns: 1fr; }
-    .two-cols  { grid-template-columns: 1fr; }
+    .two-cols      { grid-template-columns: 1fr; }
     .produto-total { min-width: auto; }
 }
 
