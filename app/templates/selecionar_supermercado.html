@@ -161,7 +161,9 @@ function renderResults(results) {
                 ${r.aberto === true ? `<span class="result-badge open">Aberto</span>` : r.aberto === false ? `<span class="result-badge closed">Fechado</span>` : ""}
             </div>
             <button class="btn-use-this"
-                onclick="selecionarMercado(${JSON.stringify(r.nome)}, ${JSON.stringify(r.endereco || '')}, ${JSON.stringify(r.place_id || '')})">
+                data-nome="${escHtml(r.nome)}"
+                data-end="${escHtml(r.endereco || '')}"
+                data-place="${escHtml(r.place_id || '')}">
                 Usar <i class="fa-solid fa-arrow-right"></i>
             </button>
         </div>
@@ -185,8 +187,18 @@ function buscar(q, lat, lng) {
 }
 
 function escHtml(str) {
-    return (str || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    return (str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
 }
+
+document.getElementById("results-wrap").addEventListener("click", function (e) {
+    const btn = e.target.closest(".btn-use-this[data-nome]");
+    if (!btn) return;
+    selecionarMercado(btn.dataset.nome, btn.dataset.end || "", btn.dataset.place || "");
+});
 
 document.getElementById("input-busca").addEventListener("input", function () {
     clearTimeout(debounceTimer);
