@@ -46,6 +46,21 @@ class ProdutoRepository:
         return row["total"] if row else 0
 
     @staticmethod
+    def search_by_tokens(cur, usuario_id, tokens):
+        if not tokens:
+            return []
+        conditions = " OR ".join(["nome ILIKE %s" for _ in tokens])
+        params = [f"%{t}%" for t in tokens] + [usuario_id]
+        cur.execute(f"""
+            SELECT id, nome, setor, ultimo_preco
+            FROM produtos
+            WHERE ({conditions}) AND usuario_id = %s
+            ORDER BY nome
+            LIMIT 10
+        """, params)
+        return cur.fetchall()
+
+    @staticmethod
     def bulk_insert_defaults(cur, usuario_id, itens):
         cur.executemany("""
             INSERT INTO produtos (nome, setor, ultimo_preco, usuario_id)

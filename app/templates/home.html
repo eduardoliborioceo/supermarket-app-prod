@@ -161,6 +161,45 @@
 </div>
 
 
+<div class="modal" id="modalCamera">
+    <div class="modal-content modal-camera">
+        <div class="modal-head">
+            <h3>Escanear produto</h3>
+            <button type="button" class="modal-x" onclick="fecharCamera()" aria-label="Fechar">×</button>
+        </div>
+        <div class="camera-wrapper">
+            <video id="camera-video" autoplay muted playsinline></video>
+            <canvas id="camera-canvas" style="display:none"></canvas>
+            <div class="camera-viewfinder">
+                <div class="camera-frame-corner tl"></div>
+                <div class="camera-frame-corner tr"></div>
+                <div class="camera-frame-corner bl"></div>
+                <div class="camera-frame-corner br"></div>
+            </div>
+        </div>
+        <p id="camera-status" class="camera-status">Iniciando câmera...</p>
+        <div class="modal-actions">
+            <button type="button" class="btn-ghost" onclick="fecharCamera()">Cancelar</button>
+            <button type="button" class="btn-primary" id="btn-capturar" onclick="capturarImagem()">
+                <i class="fa-solid fa-camera"></i>
+                Capturar
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal" id="modalScanResultado">
+    <div class="modal-content">
+        <div class="modal-head">
+            <h3 id="scan-titulo">Produto encontrado</h3>
+            <button type="button" class="modal-x" onclick="fecharModalScan()" aria-label="Fechar">×</button>
+        </div>
+        <div id="scan-corpo"></div>
+    </div>
+</div>
+
+
 <div class="modal" id="modalInstalarIos">
     <div class="modal-content">
         <div class="modal-head">
@@ -502,5 +541,7 @@ window.addEventListener("load", () => {
     });
 });
 </script>
+
+<script src="{{ url_for('static', filename='js/camera.js') }}"></script>
 
 {% endblock %}
