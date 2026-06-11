@@ -2,19 +2,19 @@
     let stream = null;
     let produtosScan = [];
     let produtoAtual = null;
-    let statusEl = null;
+    let scanAtivo = false;
+    let tickTimeout = null;
+    const modoRapido = "TextDetector" in window;
 
     window.abrirCamera = async function () {
-        statusEl = document.getElementById("camera-status");
-        const btn = document.getElementById("btn-capturar");
+        scanAtivo = false;
+        clearTimeout(tickTimeout);
 
         document.getElementById("modalCamera").style.display = "flex";
-        btn.disabled = false;
         definirStatus("Iniciando câmera...", "");
 
         if (!navigator.mediaDevices?.getUserMedia) {
             definirStatus("Câmera não suportada neste navegador.", "error");
-            btn.disabled = true;
             return;
         }
 
@@ -23,17 +23,20 @@
                 video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 } }
             });
             document.getElementById("camera-video").srcObject = stream;
-            definirStatus("Aponte para a embalagem do produto e toque em Capturar.", "");
+            definirStatus("Aponte para a embalagem do produto.", "");
+            scanAtivo = true;
+            loopScan();
         } catch (e) {
             const msg = e.name === "NotAllowedError"
                 ? "Permissão negada. Habilite a câmera nas configurações do navegador."
                 : "Câmera não disponível neste dispositivo.";
             definirStatus(msg, "error");
-            document.getElementById("btn-capturar").disabled = true;
         }
     };
 
     window.fecharCamera = function () {
+        scanAtivo = false;
+        clearTimeout(tickTimeout);
         pararStream();
         document.getElementById("modalCamera").style.display = "none";
     };
@@ -45,54 +48,47 @@
         }
     }
 
-    window.capturarImagem = async function () {
-        const video = document.getElementById("camera-video");
-        const canvas = document.getElementById("camera-canvas");
-        const btn = document.getElementById("btn-capturar");
+    async function loopScan() {
+        if (!scanAtivo) return;
 
-        if (!video.videoWidth) {
-            definirStatus("Câmera ainda inicializando. Aguarde.", "");
+        const video = document.getElementById("camera-video");
+        if (!video.videoWidth || !video.videoHeight) {
+            tickTimeout = setTimeout(loopScan, 300);
             return;
         }
 
-        btn.disabled = true;
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvas.getContext("2d").drawImage(video, 0, 0);
-
-        definirStatus("Lendo texto da embalagem...", "");
+        const canvas = document.getElementById("camera-canvas");
+        const escala = Math.min(1, 800 / video.videoWidth);
+        canvas.width = Math.floor(video.videoWidth * escala);
+        canvas.height = Math.floor(video.videoHeight * escala);
+        canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
 
         try {
             const texto = await extrairTexto(canvas);
 
-            if (!texto || texto.trim().length < 2) {
-                definirStatus("Nenhum texto detectado. Aproxime mais e tente novamente.", "warn");
-                btn.disabled = false;
-                return;
+            if (texto && texto.trim().length >= 3) {
+                const res = await fetch(`/api/produto/buscar?q=${encodeURIComponent(texto)}`);
+                const data = await res.json();
+                const produtos = data.status === "ok" ? data.produtos : [];
+
+                if (produtos.length > 0 && scanAtivo) {
+                    scanAtivo = false;
+                    if ("vibrate" in navigator) navigator.vibrate(80);
+                    pararStream();
+                    document.getElementById("modalCamera").style.display = "none";
+                    abrirScanResultado(produtos);
+                    return;
+                }
             }
+        } catch {}
 
-            definirStatus("Buscando na sua lista...", "");
-            const res = await fetch(`/api/produto/buscar?q=${encodeURIComponent(texto)}`);
-            const data = await res.json();
-            const produtos = data.status === "ok" ? data.produtos : [];
-
-            if (!produtos.length) {
-                definirStatus("Produto não encontrado na sua lista. Tente outro ângulo.", "warn");
-                btn.disabled = false;
-                return;
-            }
-
-            pararStream();
-            document.getElementById("modalCamera").style.display = "none";
-            abrirScanResultado(produtos);
-        } catch {
-            definirStatus("Erro ao processar imagem. Tente novamente.", "error");
-            btn.disabled = false;
+        if (scanAtivo) {
+            tickTimeout = setTimeout(loopScan, modoRapido ? 700 : 0);
         }
-    };
+    }
 
     async function extrairTexto(canvas) {
-        if ("TextDetector" in window) {
+        if (modoRapido) {
             const detector = new TextDetector();
             const blocos = await detector.detect(canvas);
             return blocos.map(b => b.rawValue).join(" ");
@@ -102,8 +98,9 @@
 
     async function extrairComTesseract(canvas) {
         if (!window.Tesseract) {
-            definirStatus("Carregando leitor de texto (1x, pode demorar)...", "");
+            definirStatus("Carregando leitor de texto (1x, aguarde)...", "");
             await carregarScript("https://cdn.jsdelivr.net/npm/tesseract.js@4.1.4/dist/tesseract.min.js");
+            definirStatus("Aponte para a embalagem do produto.", "");
         }
         const { data: { text } } = await Tesseract.recognize(canvas, "por+eng", {
             logger: () => {}
@@ -223,19 +220,20 @@
 
     function realcarCard(card) {
         card.scrollIntoView({ behavior: "smooth", block: "center" });
-        const prevTransition = card.style.transition;
+        const prev = card.style.transition;
         card.style.transition = "box-shadow 0.25s ease";
         card.style.boxShadow = "0 0 0 3px rgba(13,110,253,0.45)";
         setTimeout(() => {
             card.style.boxShadow = "";
-            card.style.transition = prevTransition;
+            card.style.transition = prev;
         }, 2000);
     }
 
     function definirStatus(msg, tipo) {
-        if (!statusEl) return;
-        statusEl.textContent = msg;
-        statusEl.className = "camera-status" + (tipo ? ` camera-status--${tipo}` : "");
+        const el = document.getElementById("camera-status");
+        if (!el) return;
+        el.textContent = msg;
+        el.className = "camera-status" + (tipo ? ` camera-status--${tipo}` : "");
     }
 
     function esc(str) {

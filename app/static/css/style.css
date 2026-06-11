@@ -1028,14 +1028,33 @@ a { color: inherit; }
     position: absolute;
     width: 28px;
     height: 28px;
-    border-color: rgba(255, 255, 255, 0.85);
     border-style: solid;
+    animation: corner-glow 2s ease-in-out infinite;
 }
 
 .camera-frame-corner.tl { top: 16%; left: 8%; border-width: 3px 0 0 3px; border-radius: 4px 0 0 0; }
 .camera-frame-corner.tr { top: 16%; right: 8%; border-width: 3px 3px 0 0; border-radius: 0 4px 0 0; }
 .camera-frame-corner.bl { bottom: 16%; left: 8%; border-width: 0 0 3px 3px; border-radius: 0 0 0 4px; }
 .camera-frame-corner.br { bottom: 16%; right: 8%; border-width: 0 3px 3px 0; border-radius: 0 0 4px 0; }
+
+@keyframes corner-glow {
+    0%, 100% { border-color: rgba(255, 255, 255, 0.7); }
+    50%       { border-color: rgba(13, 110, 253, 0.95); }
+}
+
+.camera-scan-line {
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(13, 110, 253, 0.85), transparent);
+    animation: scan-sweep 2s ease-in-out infinite;
+}
+
+@keyframes scan-sweep {
+    0%, 100% { top: 18%; opacity: 0.5; }
+    50%       { top: 76%; opacity: 1; }
+}
 
 .camera-status {
     font-size: 13px;
