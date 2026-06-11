@@ -58,6 +58,26 @@ def selecionar_supermercado():
     return jsonify({"status": "ok"})
 
 
+@api_bp.route("/produto/buscar")
+@login_required
+def buscar_produto():
+    q = (request.args.get("q") or "").strip()
+    if len(q) < 2:
+        return jsonify({"status": "ok", "produtos": []})
+    tokens = ProdutoService.extrair_tokens_busca(q)
+    if not tokens:
+        return jsonify({"status": "ok", "produtos": []})
+    with db_cursor() as cur:
+        rows = ProdutoRepository.search_by_tokens(cur, session["user_id"], tokens)
+    return jsonify({
+        "status": "ok",
+        "produtos": [
+            {"id": p["id"], "nome": p["nome"], "setor": p["setor"], "preco": float(p["ultimo_preco"])}
+            for p in rows
+        ]
+    })
+
+
 @api_bp.route("/produto/adicionar", methods=["POST"])
 @login_required
 def adicionar_produto():

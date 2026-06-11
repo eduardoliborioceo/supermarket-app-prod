@@ -1,3 +1,6 @@
+import re
+
+
 class ProdutoService:
     @staticmethod
     def validar(nome, preco, setor=None):
@@ -20,3 +23,8 @@ class ProdutoService:
     @staticmethod
     def normalizar_setor(setor: str) -> str:
         return (setor or "").strip()
+
+    @staticmethod
+    def extrair_tokens_busca(texto: str) -> list:
+        tokens = re.split(r"[^a-zA-ZÀ-ÿ0-9]+", texto)
+        return [t for t in tokens if len(t) >= 3][:15]

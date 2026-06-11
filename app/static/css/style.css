@@ -982,6 +982,151 @@ a { color: inherit; }
     border-color: var(--brand);
 }
 
+/* ======================================================
+   CAMERA SCAN
+====================================================== */
+.modal-camera {
+    max-width: 480px;
+}
+
+@media (max-width: 600px) {
+    #modalCamera {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .modal-camera {
+        max-width: 100%;
+        border-radius: 20px 20px 0 0;
+    }
+}
+
+.camera-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+#camera-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.camera-viewfinder {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.camera-frame-corner {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    border-color: rgba(255, 255, 255, 0.85);
+    border-style: solid;
+}
+
+.camera-frame-corner.tl { top: 16%; left: 8%; border-width: 3px 0 0 3px; border-radius: 4px 0 0 0; }
+.camera-frame-corner.tr { top: 16%; right: 8%; border-width: 3px 3px 0 0; border-radius: 0 4px 0 0; }
+.camera-frame-corner.bl { bottom: 16%; left: 8%; border-width: 0 0 3px 3px; border-radius: 0 0 0 4px; }
+.camera-frame-corner.br { bottom: 16%; right: 8%; border-width: 0 3px 3px 0; border-radius: 0 0 4px 0; }
+
+.camera-status {
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+    min-height: 20px;
+    margin: 0 0 8px;
+    line-height: 1.4;
+}
+
+.camera-status--error { color: var(--danger); }
+.camera-status--warn  { color: #b45309; }
+
+/* Scan result modal */
+.scan-produto-info {
+    background: rgba(13, 110, 253, 0.06);
+    border: 1px solid rgba(13, 110, 253, 0.18);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+}
+
+.scan-nome {
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: -0.2px;
+    color: var(--text);
+}
+
+.scan-setor {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+}
+
+.scan-qtd-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 12px 0;
+    flex-wrap: wrap;
+}
+
+.scan-qtd-label {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.scan-hint {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 0 0 10px;
+}
+
+.scan-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    cursor: pointer;
+    margin-bottom: 8px;
+    text-align: left;
+    transition: background 0.12s, border-color 0.12s;
+}
+
+.scan-item:hover,
+.scan-item:active {
+    background: rgba(13, 110, 253, 0.05);
+    border-color: rgba(13, 110, 253, 0.25);
+}
+
+.scan-item-nome {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text);
+}
+
+.scan-item-setor {
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
 .login-credit-install i {
     font-size: 20px;
     color: var(--brand);
