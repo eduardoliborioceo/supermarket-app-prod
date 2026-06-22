@@ -18,8 +18,18 @@
         </div>
 
         <div class="kpi-card kpi-highlight">
-            <span>Saldo disponível</span>
-            <strong id="saldo-disponivel">R$ 0,00</strong>
+            <div class="kpi-highlight-body">
+                <div class="kpi-highlight-text">
+                    <span>Saldo disponível</span>
+                    <strong id="saldo-disponivel">R$ 0,00</strong>
+                </div>
+                <div class="cat-nav">
+                    <button class="cat-dot" style="--dot-color:#3b82f6" onclick="scrollParaCategoria(0)" type="button"></button>
+                    <button class="cat-dot" style="--dot-color:#f59e0b" onclick="scrollParaCategoria(1)" type="button"></button>
+                    <button class="cat-dot" style="--dot-color:#10b981" onclick="scrollParaCategoria(2)" type="button"></button>
+                    <button class="cat-dot" style="--dot-color:#8b5cf6" onclick="scrollParaCategoria(3)" type="button"></button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -439,12 +449,30 @@ function adicionarCardNaLista(nome, preco, setor) {
     }
 }
 
+function scrollParaCategoria(index) {
+    const cards = document.querySelectorAll(".category-card");
+    if (!cards[index]) return;
+    const headerH = document.querySelector(".app-header")?.offsetHeight || 61;
+    const kpiH = document.getElementById("kpi-sticky")?.offsetHeight || 0;
+    const top = cards[index].getBoundingClientRect().top + window.scrollY - headerH - kpiH - 8;
+    window.scrollTo({ top, behavior: "smooth" });
+}
+
 window.addEventListener("load", () => {
     const header = document.querySelector(".app-header");
     const kpiBar = document.getElementById("kpi-sticky");
     if (header && kpiBar) {
         kpiBar.style.top = header.offsetHeight + "px";
     }
+
+    document.querySelectorAll(".cat-dot").forEach((dot, i) => {
+        const cards = document.querySelectorAll(".category-card");
+        if (cards[i]) {
+            dot.title = cards[i].querySelector("h2")?.innerText || "";
+        } else {
+            dot.style.display = "none";
+        }
+    });
 
     if (isIos() && !isInStandaloneMode()) {
         document.getElementById("btn-instalar").style.display = "inline-flex";
