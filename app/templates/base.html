@@ -65,11 +65,11 @@
         <small>Compras</small>
     </a>
 
-    <button type="button" class="bottom-item bottom-item-camera" onclick="abrirCameraNavBtn()" aria-label="Escanear produto">
+    <button type="button" class="bottom-item bottom-item-camera" onclick="abrirMenuAcao()" aria-label="Adicionar produto">
         <span class="camera-fab">
-            <i class="fa-solid fa-camera"></i>
+            <i class="fa-solid fa-microphone-lines"></i>
         </span>
-        <small>Escanear</small>
+        <small>Adicionar</small>
     </button>
 
     <a href="{{ url_for('pages.produtos') }}"
@@ -125,20 +125,82 @@
     </div>
 </div>
 
+
+<div class="modal" id="modalAcao">
+    <div class="modal-content">
+        <div class="modal-head">
+            <h3>Adicionar à lista</h3>
+            <button type="button" class="modal-x" onclick="fecharMenuAcao()" aria-label="Fechar">×</button>
+        </div>
+        <div class="acao-opcoes">
+            <button type="button" class="acao-btn" onclick="iniciarVoz()">
+                <span class="acao-icon acao-voz">
+                    <i class="fa-solid fa-microphone"></i>
+                </span>
+                <span class="acao-nome">Voz</span>
+                <span class="acao-desc">Fale o nome do produto</span>
+            </button>
+            <button type="button" class="acao-btn" onclick="fecharMenuAcao(); abrirCamera();">
+                <span class="acao-icon acao-camera">
+                    <i class="fa-solid fa-camera"></i>
+                </span>
+                <span class="acao-nome">Escanear</span>
+                <span class="acao-desc">Aponte a câmera</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal" id="modalVoz">
+    <div class="modal-content">
+        <div class="modal-head">
+            <h3>Comando de voz</h3>
+            <button type="button" class="modal-x" onclick="fecharVoz()" aria-label="Fechar">×</button>
+        </div>
+        <div class="voz-corpo">
+            <div class="voz-mic-wrap" id="voz-mic-wrap">
+                <div class="voz-mic-ring"></div>
+                <div class="voz-mic-ring voz-mic-ring-2"></div>
+                <button type="button" class="voz-mic-btn voz-mic-off" id="voz-mic-btn" aria-label="Microfone">
+                    <i class="fa-solid fa-microphone"></i>
+                </button>
+            </div>
+            <p class="voz-status" id="voz-status">Aguardando...</p>
+            <p class="voz-transcript" id="voz-transcript"></p>
+            <div id="voz-produto-info" style="display:none"></div>
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn-ghost" onclick="fecharVoz()">Cancelar</button>
+            <button type="button" class="btn-primary" id="btn-voz-confirmar" style="display:none" onclick="confirmarVozBtn()">
+                <i class="fa-solid fa-check"></i>
+                Confirmar
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="toast-container"></div>
+
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 <script src="{{ url_for('static', filename='js/camera.js') }}"></script>
+<script src="{{ url_for('static', filename='js/voz.js') }}"></script>
 
 <script>
 function paginaEmBreve() {
     alert("🚧 Página em desenvolvimento");
 }
 
-function abrirCameraNavBtn() {
+function abrirMenuAcao() {
     if (document.querySelector('.categories')) {
-        abrirCamera();
+        document.getElementById('modalAcao').style.display = 'flex';
     } else {
         window.location.href = "{{ url_for('pages.home') }}";
     }
+}
+
+function fecharMenuAcao() {
+    document.getElementById('modalAcao').style.display = 'none';
 }
 </script>
 
