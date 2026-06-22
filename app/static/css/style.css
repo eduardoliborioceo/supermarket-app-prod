@@ -426,6 +426,7 @@ a { color: inherit; }
 .produto-info .nome {
     font-weight: 800;
     letter-spacing: -0.2px;
+    color: var(--cat-color);
 }
 
 .produto-sub {
