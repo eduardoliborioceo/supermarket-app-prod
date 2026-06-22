@@ -221,6 +221,44 @@ a { color: inherit; }
     background: linear-gradient(180deg, rgba(20,148,63,0.10), #fff);
 }
 
+.kpi-highlight-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.kpi-highlight-text {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.cat-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+    flex-shrink: 0;
+}
+
+.cat-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    border: none;
+    background: var(--dot-color);
+    cursor: pointer;
+    opacity: 0.80;
+    transition: opacity 0.15s ease, transform 0.12s ease;
+    padding: 0;
+}
+
+.cat-dot:active {
+    opacity: 1;
+    transform: scale(0.88);
+}
+
 .kpi-input input {
     width: 100%;
     padding: 10px 12px;
