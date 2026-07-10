@@ -8,10 +8,11 @@ from app.routes.auth import login_required
 pages_bp = Blueprint("pages", __name__)
 
 CATEGORIAS_PADRAO = [
-    "Alimentos Principais",
+    "Principais",
     "Complementos",
     "Temperos",
-    "Higiene e Limpeza",
+    "Saúde e Higiene",
+    "Bebidas",
 ]
 
 
