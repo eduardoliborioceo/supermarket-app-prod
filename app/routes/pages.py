@@ -2,6 +2,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from app.extensions import db_cursor
 from app.repositories.produto_repository import ProdutoRepository
 from app.repositories.supermercado_repository import SupermercadoRepository
+from app.repositories.compra_repository import CompraRepository
+from app.repositories.usuario_repository import UsuarioRepository
 from app.services.produto_service import ProdutoService
 from app.routes.auth import login_required
 
@@ -20,6 +22,14 @@ CATEGORIAS_PADRAO = [
 def home():
     with db_cursor() as cur:
         produtos = ProdutoRepository.list_all(cur, session["user_id"])
+        carrinho = CompraRepository.get_carrinho(cur, session["user_id"])
+        gasto_previsto = UsuarioRepository.get_gasto_previsto(cur, session["user_id"])
+
+    carrinho_map = {c["produto_id"]: c for c in carrinho}
+    for p in produtos:
+        item = carrinho_map.get(p["id"])
+        p["qtd_carrinho"] = int(item["quantidade"]) if item else 0
+        p["preco_carrinho"] = float(item["preco"]) if item else float(p["ultimo_preco"])
 
     setores_db = set(p["setor"] for p in produtos)
     extra = sorted(s for s in setores_db if s not in CATEGORIAS_PADRAO)
@@ -29,6 +39,7 @@ def home():
         "home.html",
         produtos=produtos,
         categorias=categorias,
+        gasto_previsto=float(gasto_previsto or 0),
         page="home"
     )
 

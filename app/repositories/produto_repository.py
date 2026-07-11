@@ -17,7 +17,9 @@ class ProdutoRepository:
             ON CONFLICT (nome, usuario_id) DO UPDATE SET
                 setor = EXCLUDED.setor,
                 ultimo_preco = EXCLUDED.ultimo_preco
+            RETURNING id
         """, (nome, setor, preco, usuario_id))
+        return cur.fetchone()["id"]
 
     @staticmethod
     def update(cur, produto_id, nome, setor, preco, usuario_id):

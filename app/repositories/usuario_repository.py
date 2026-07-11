@@ -11,3 +11,19 @@ class UsuarioRepository:
             RETURNING id, nome, foto_url
         """, (google_id, email, nome, foto_url))
         return cur.fetchone()
+
+    @staticmethod
+    def get_gasto_previsto(cur, usuario_id):
+        cur.execute(
+            "SELECT gasto_previsto FROM usuarios WHERE id = %s",
+            (usuario_id,)
+        )
+        row = cur.fetchone()
+        return row["gasto_previsto"] if row else 0
+
+    @staticmethod
+    def set_gasto_previsto(cur, usuario_id, valor):
+        cur.execute(
+            "UPDATE usuarios SET gasto_previsto = %s WHERE id = %s",
+            (valor, usuario_id)
+        )
