@@ -82,31 +82,31 @@
 
             <div class="category-items">
                 {% for p in produtos if p.setor == categoria %}
-                <div class="produto-card" data-preco="{{ p.ultimo_preco }}">
+                <div class="produto-card" data-id="{{ p.id }}" data-preco="{{ p.preco_carrinho }}">
                     <div class="produto-row">
                         <div class="produto-info">
                             <div class="nome">{{ p.nome }}</div>
                             <div class="produto-sub">
-                                <span class="preco-texto">R$ {{ "%.2f"|format(p.ultimo_preco) }}</span>
+                                <span class="preco-texto">R$ {{ "%.2f"|format(p.preco_carrinho) }}</span>
 
                                 <input
                                     type="number"
                                     class="preco-input"
-                                    value="{{ p.ultimo_preco }}"
+                                    value="{{ p.preco_carrinho }}"
                                     step="0.01"
                                 >
                             </div>
                         </div>
 
                         <div class="produto-total">
-                            <strong class="total-produto">R$ {{ "%.2f"|format(p.ultimo_preco) }}</strong>
+                            <strong class="total-produto">R$ {{ "%.2f"|format(p.preco_carrinho * p.qtd_carrinho) }}</strong>
                         </div>
                     </div>
 
                     <div class="produto-actions">
                         <div class="qtd">
                             <button class="btn-menos" aria-label="Diminuir">−</button>
-                            <span class="qtd-valor">0</span>
+                            <span class="qtd-valor">{{ p.qtd_carrinho }}</span>
                             <button class="btn-mais" aria-label="Aumentar">+</button>
                         </div>
 
@@ -202,6 +202,10 @@
 <script>
 let categoriaAtual = null;
 let deferredInstallPrompt = null;
+const gastoPrevistoServidor = {{ gasto_previsto or 0 }};
+const carrinhoTimers = {};
+const carrinhoUltimoEnvio = {};
+let gastoPrevistoTimer = null;
 
 const formatar = v =>
     "R$ " + Number(v).toFixed(2).replace(".", ",");
@@ -342,53 +346,68 @@ function atualizarProduto(card) {
     salvarEstado();
 }
 
-function salvarEstado() {
-    const estado = {
-        gastoPrevisto: document.getElementById("gasto-previsto").value,
-        produtos: []
-    };
+function agendarSalvarItem(produtoId, qtd, preco) {
+    const assinatura = qtd + ":" + preco;
+    if (carrinhoUltimoEnvio[produtoId] === assinatura) return;
 
+    clearTimeout(carrinhoTimers[produtoId]);
+    carrinhoTimers[produtoId] = setTimeout(() => {
+        carrinhoUltimoEnvio[produtoId] = assinatura;
+        fetch("/api/carrinho/atualizar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ produto_id: Number(produtoId), quantidade: qtd, preco })
+        }).catch(() => {});
+    }, 500);
+}
+
+function agendarSalvarGastoPrevisto() {
+    clearTimeout(gastoPrevistoTimer);
+    gastoPrevistoTimer = setTimeout(() => {
+        const valor = parseMoeda(document.getElementById("gasto-previsto").value);
+        fetch("/api/carrinho/gasto-previsto", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ valor })
+        }).catch(() => {});
+    }, 500);
+}
+
+function salvarEstado() {
     document.querySelectorAll(".produto-card").forEach(card => {
-        estado.produtos.push({
-            nome: card.querySelector(".nome").innerText,
-            preco: Number(card.dataset.preco),
-            qtd: Number(card.querySelector(".qtd-valor").innerText)
-        });
+        const produtoId = card.dataset.id;
+        if (!produtoId) return;
+
+        const preco = Number(card.dataset.preco) || 0;
+        const qtd = Number(card.querySelector(".qtd-valor").innerText) || 0;
+        agendarSalvarItem(produtoId, qtd, preco);
     });
 
-    localStorage.setItem("listaCompras", JSON.stringify(estado));
+    agendarSalvarGastoPrevisto();
 }
 
 function restaurarEstado() {
-    const dados = localStorage.getItem("listaCompras");
-    if (!dados) return;
-
-    const estado = JSON.parse(dados);
-    if (estado.gastoPrevisto) {
-        document.getElementById("gasto-previsto").value =
-            formatar(parseMoeda(estado.gastoPrevisto));
+    if (gastoPrevistoServidor) {
+        document.getElementById("gasto-previsto").value = formatar(gastoPrevistoServidor);
     }
-
-    document.querySelectorAll(".produto-card").forEach(card => {
-        const nome = card.querySelector(".nome").innerText;
-        const salvo = estado.produtos.find(p => p.nome === nome);
-        if (salvo) {
-            const preco = Number(card.dataset.preco) || 0;
-            card.querySelector(".qtd-valor").innerText = salvo.qtd;
-            card.querySelector(".total-produto").innerText = formatar(preco * salvo.qtd);
-        }
-    });
-
     calcularTotais();
 }
 
 function limparDados() {
     if (!confirm("Deseja limpar todos os dados da compra atual?")) return;
 
-    localStorage.removeItem("listaCompras");
-    document.querySelectorAll(".qtd-valor").forEach(q => q.innerText = 0);
-    document.getElementById("gasto-previsto").value = "";
-    calcularTotais();
+    fetch("/api/carrinho/limpar", { method: "POST" })
+        .then(() => {
+            document.querySelectorAll(".qtd-valor").forEach(q => q.innerText = 0);
+            document.querySelectorAll(".produto-card").forEach(card => {
+                const preco = Number(card.dataset.preco) || 0;
+                card.querySelector(".total-produto").innerText = formatar(preco);
+            });
+            document.getElementById("gasto-previsto").value = "";
+            Object.keys(carrinhoUltimoEnvio).forEach(k => delete carrinhoUltimoEnvio[k]);
+            calcularTotais();
+        })
+        .catch(() => alert("Erro ao limpar os dados. Tente novamente."));
 }
 
 window.addEventListener("beforeinstallprompt", (e) => {
@@ -406,7 +425,7 @@ function escapeHtml(str) {
     return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-function adicionarCardNaLista(nome, preco, setor) {
+function adicionarCardNaLista(nome, preco, setor, id) {
     const categoriaCard = [...document.querySelectorAll(".category-card")]
         .find(cat => cat.dataset.categoria === setor);
     if (!categoriaCard) return;
@@ -417,6 +436,7 @@ function adicionarCardNaLista(nome, preco, setor) {
 
     const card = document.createElement("div");
     card.className = "produto-card";
+    card.dataset.id = id;
     card.dataset.preco = preco;
     card.innerHTML = `
         <div class="produto-row">
@@ -516,7 +536,7 @@ window.addEventListener("load", () => {
         .then(r => r.json())
         .then(res => {
             if (res.status === "ok") {
-                adicionarCardNaLista(res.nome, res.preco, res.setor);
+                adicionarCardNaLista(res.nome, res.preco, res.setor, res.id);
                 fecharModalProduto();
                 form.reset();
             } else {
@@ -528,6 +548,19 @@ window.addEventListener("load", () => {
             btnSalvar.disabled = false;
             btnSalvar.textContent = "Salvar";
         });
+    });
+});
+
+window.addEventListener("pagehide", () => {
+    document.querySelectorAll(".produto-card").forEach(card => {
+        const produtoId = card.dataset.id;
+        if (!produtoId) return;
+
+        clearTimeout(carrinhoTimers[produtoId]);
+        const preco = Number(card.dataset.preco) || 0;
+        const qtd = Number(card.querySelector(".qtd-valor").innerText) || 0;
+        const payload = JSON.stringify({ produto_id: Number(produtoId), quantidade: qtd, preco });
+        navigator.sendBeacon("/api/carrinho/atualizar", new Blob([payload], { type: "application/json" }));
     });
 });
 </script>

@@ -47,6 +47,30 @@ def init_db(app):
             );
         """)
 
+        # Migração: adiciona usuario_id para isolar o carrinho por usuário
+        cur.execute("""
+            ALTER TABLE compras
+            ADD COLUMN IF NOT EXISTS usuario_id INTEGER
+            REFERENCES usuarios(id) ON DELETE CASCADE;
+        """)
+
+        # Remove linhas órfãs (sem usuario_id) que ficariam inalcançáveis
+        cur.execute("DELETE FROM compras WHERE usuario_id IS NULL;")
+
+        # Cria unique constraint composta (produto_id, usuario_id) se não existir
+        cur.execute("""
+            DO $$ BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM pg_constraint
+                    WHERE conname = 'compras_produto_id_usuario_id_key'
+                ) THEN
+                    ALTER TABLE compras
+                    ADD CONSTRAINT compras_produto_id_usuario_id_key
+                    UNIQUE (produto_id, usuario_id);
+                END IF;
+            END $$;
+        """)
+
         # Migração: adiciona usuario_id se a tabela já existia sem ela
         cur.execute("""
             ALTER TABLE produtos
@@ -85,6 +109,10 @@ def init_db(app):
         cur.execute("""
             ALTER TABLE usuarios
             ADD COLUMN IF NOT EXISTS supermercado_place_id TEXT;
+        """)
+        cur.execute("""
+            ALTER TABLE usuarios
+            ADD COLUMN IF NOT EXISTS gasto_previsto NUMERIC DEFAULT 0;
         """)
 
         conn.commit()

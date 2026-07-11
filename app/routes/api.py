@@ -2,9 +2,12 @@ from flask import Blueprint, request, jsonify, session
 from app.extensions import db_cursor
 from app.repositories.produto_repository import ProdutoRepository
 from app.repositories.supermercado_repository import SupermercadoRepository
+from app.repositories.compra_repository import CompraRepository
+from app.repositories.usuario_repository import UsuarioRepository
 from app.services.produto_service import ProdutoService
 from app.services.supermercado_service import SupermercadoService
 from app.services.itens_padrao_service import ItensPadraoService
+from app.services.compra_service import CompraService
 from app.routes.auth import login_required
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
@@ -90,8 +93,8 @@ def adicionar_produto():
         preco = float(preco)
         ProdutoService.validar(nome, preco, setor=setor)
         with db_cursor() as cur:
-            ProdutoRepository.upsert_by_name(cur, nome, setor, preco, session["user_id"])
-        return jsonify({"status": "ok", "nome": nome, "preco": preco, "setor": setor})
+            produto_id = ProdutoRepository.upsert_by_name(cur, nome, setor, preco, session["user_id"])
+        return jsonify({"status": "ok", "id": produto_id, "nome": nome, "preco": preco, "setor": setor})
     except ValueError as e:
         return _bad_request(str(e))
     except Exception:
@@ -140,3 +143,53 @@ def atualizar_produto():
         return _bad_request(str(e))
     except Exception:
         return _bad_request("Erro ao salvar produto.", status=500)
+
+
+@api_bp.route("/carrinho/atualizar", methods=["POST"])
+@login_required
+def atualizar_carrinho():
+    data = request.get_json(silent=True) or {}
+    produto_id = data.get("produto_id")
+
+    try:
+        quantidade = float(data.get("quantidade"))
+        preco = float(data.get("preco"))
+        CompraService.validar(produto_id, quantidade, preco)
+
+        with db_cursor() as cur:
+            linhas = CompraRepository.upsert_item(cur, produto_id, session["user_id"], quantidade, preco)
+
+        if linhas == 0:
+            return _bad_request("Produto não encontrado.", status=404)
+        return jsonify({"status": "ok"})
+    except (TypeError, ValueError) as e:
+        return _bad_request(str(e) or "Dados inválidos.")
+    except Exception:
+        return _bad_request("Erro ao salvar item do carrinho.", status=500)
+
+
+@api_bp.route("/carrinho/limpar", methods=["POST"])
+@login_required
+def limpar_carrinho():
+    with db_cursor() as cur:
+        CompraService.limpar(cur, session["user_id"])
+    return jsonify({"status": "ok"})
+
+
+@api_bp.route("/carrinho/gasto-previsto", methods=["POST"])
+@login_required
+def salvar_gasto_previsto():
+    data = request.get_json(silent=True) or {}
+
+    try:
+        valor = float(data.get("valor"))
+        CompraService.validar_gasto_previsto(valor)
+
+        with db_cursor() as cur:
+            UsuarioRepository.set_gasto_previsto(cur, session["user_id"], valor)
+
+        return jsonify({"status": "ok"})
+    except (TypeError, ValueError):
+        return _bad_request("Valor inválido.")
+    except Exception:
+        return _bad_request("Erro ao salvar gasto previsto.", status=500)
