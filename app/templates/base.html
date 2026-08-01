@@ -68,7 +68,7 @@
 
     <button type="button" class="bottom-item bottom-item-camera" onclick="abrirMenuAcao()" aria-label="Adicionar produto">
         <span class="camera-fab">
-            <i class="fa-solid fa-microphone-lines"></i>
+            <i class="fa-solid fa-camera"></i>
         </span>
         <small>Adicionar</small>
     </button>
@@ -134,13 +134,6 @@
             <button type="button" class="modal-x" onclick="fecharMenuAcao()" aria-label="Fechar">×</button>
         </div>
         <div class="acao-opcoes">
-            <button type="button" class="acao-btn" onclick="iniciarVoz()">
-                <span class="acao-icon acao-voz">
-                    <i class="fa-solid fa-microphone"></i>
-                </span>
-                <span class="acao-nome">Voz</span>
-                <span class="acao-desc">Fale o nome do produto</span>
-            </button>
             <button type="button" class="acao-btn" onclick="fecharMenuAcao(); abrirCamera();">
                 <span class="acao-icon acao-camera">
                     <i class="fa-solid fa-camera"></i>
@@ -153,39 +146,10 @@
 </div>
 
 
-<div class="modal" id="modalVoz">
-    <div class="modal-content">
-        <div class="modal-head">
-            <h3>Comando de voz</h3>
-            <button type="button" class="modal-x" onclick="fecharVoz()" aria-label="Fechar">×</button>
-        </div>
-        <div class="voz-corpo">
-            <div class="voz-mic-wrap" id="voz-mic-wrap">
-                <div class="voz-mic-ring"></div>
-                <div class="voz-mic-ring voz-mic-ring-2"></div>
-                <button type="button" class="voz-mic-btn voz-mic-off" id="voz-mic-btn" aria-label="Microfone">
-                    <i class="fa-solid fa-microphone"></i>
-                </button>
-            </div>
-            <p class="voz-status" id="voz-status">Aguardando...</p>
-            <p class="voz-transcript" id="voz-transcript"></p>
-            <div id="voz-produto-info" style="display:none"></div>
-        </div>
-        <div class="modal-actions">
-            <button type="button" class="btn-ghost" onclick="fecharVoz()">Cancelar</button>
-            <button type="button" class="btn-primary" id="btn-voz-confirmar" style="display:none" onclick="confirmarVozBtn()">
-                <i class="fa-solid fa-check"></i>
-                Confirmar
-            </button>
-        </div>
-    </div>
-</div>
-
 <div id="toast-container"></div>
 
 <script src="{{ url_for('static', filename='js/main.js') }}?v={{ ASSET_VERSION }}"></script>
 <script src="{{ url_for('static', filename='js/camera.js') }}?v={{ ASSET_VERSION }}"></script>
-<script src="{{ url_for('static', filename='js/voz.js') }}?v={{ ASSET_VERSION }}"></script>
 
 <script>
 function paginaEmBreve() {
