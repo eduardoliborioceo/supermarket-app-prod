@@ -40,6 +40,7 @@
         {% if session.user_foto %}
         <a href="{{ url_for('auth.logout') }}" class="user-avatar-wrap" title="Sair ({{ session.user_nome }})">
             <img class="user-avatar" src="{{ session.user_foto }}" alt="{{ session.user_nome }}">
+            <span class="status-dot" aria-hidden="true"></span>
         </a>
         {% endif %}
     </div>
