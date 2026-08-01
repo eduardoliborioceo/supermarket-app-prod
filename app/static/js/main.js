@@ -75,13 +75,18 @@
     }
 
     searchResults.innerHTML = matches.map(card => {
+      const categoryCard = card.closest(".category-card");
       const nome = card.querySelector(".nome")?.innerText || "";
-      const setor = card.closest(".category-card")?.dataset.categoria || "";
+      const setor = categoryCard?.dataset.categoria || "";
       const preco = Number(card.dataset.preco) || 0;
+      const corCategoria = categoryCard
+        ? getComputedStyle(categoryCard).getPropertyValue("--cat-color").trim()
+        : "";
+      const setorStyle = corCategoria ? ` style="color:${corCategoria}"` : "";
       return `<button type="button" class="search-result-item" data-id="${escapeHtml(card.dataset.id)}">
         <div class="search-result-info">
           <div class="search-result-nome">${escapeHtml(nome)}</div>
-          <div class="search-result-setor">${escapeHtml(setor)}</div>
+          <div class="search-result-setor"${setorStyle}>${escapeHtml(setor)}</div>
         </div>
         <div class="search-result-preco">${formatarMoeda(preco)}</div>
       </button>`;
