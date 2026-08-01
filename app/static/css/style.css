@@ -8,6 +8,8 @@
     --danger: #dc3545;
     --danger-2: #b02a37;
 
+    --success: #198754;
+
     --bg: #f6f8fb;
     --card: #ffffff;
 
@@ -862,6 +864,7 @@ a { color: inherit; }
    USER AVATAR
 ====================================================== */
 .user-avatar-wrap {
+    position: relative;
     display: inline-flex;
     align-items: center;
     text-decoration: none;
@@ -873,6 +876,17 @@ a { color: inherit; }
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid rgba(13, 110, 253, 0.25);
+}
+
+.status-dot {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 10px;
+    height: 10px;
+    background: var(--success);
+    border: 2px solid var(--card);
+    border-radius: 50%;
 }
 
 /* ======================================================
@@ -1251,7 +1265,15 @@ a { color: inherit; }
 }
 
 .select-mkt-avatar-wrap {
+    position: relative;
     flex-shrink: 0;
+}
+
+.select-mkt-avatar-wrap .status-dot {
+    width: 14px;
+    height: 14px;
+    border-width: 3px;
+    border-color: #0f172a;
 }
 
 .select-mkt-avatar {

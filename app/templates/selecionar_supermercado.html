@@ -23,6 +23,7 @@
                 <i class="fa-solid fa-user"></i>
             </div>
             {% endif %}
+            <span class="status-dot" aria-hidden="true"></span>
         </div>
         <div>
             <p class="select-mkt-greeting">Olá, {{ session.user_nome.split()[0] if session.user_nome else "usuário" }} 👋</p>
