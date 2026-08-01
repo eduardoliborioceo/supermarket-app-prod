@@ -173,6 +173,73 @@ a { color: inherit; }
     line-height: 1;
 }
 
+.search-results {
+    display: none;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 8px 12px 4px;
+    max-height: 55vh;
+    overflow-y: auto;
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    background: var(--card, #fff);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: left;
+    transition: border-color 0.14s ease, background 0.14s ease;
+}
+
+.search-result-item:active {
+    border-color: rgba(13, 110, 253, 0.35);
+    background: rgba(13, 110, 253, 0.05);
+}
+
+.search-result-info {
+    min-width: 0;
+}
+
+.search-result-nome {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.search-result-setor {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.search-result-preco {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.search-results-empty {
+    padding: 14px 12px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+}
+
 .kpi-sticky {
     position: sticky;
     top: var(--header-h);
