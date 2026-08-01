@@ -140,14 +140,16 @@ def create_app():
     app.register_blueprint(pages_bp)
     app.register_blueprint(api_bp)
 
+    app.jinja_env.globals["ASSET_VERSION"] = STARTUP_VERSION
+
     @app.route("/sw.js")
     def service_worker():
         sw_content = f"""/* cache version: {STARTUP_VERSION} */
 const CACHE_NAME = "supermercado-{STARTUP_VERSION}";
 
 const STATIC_ASSETS = [
-  "/static/css/style.css",
-  "/static/js/main.js",
+  "/static/css/style.css?v={STARTUP_VERSION}",
+  "/static/js/main.js?v={STARTUP_VERSION}",
   "/static/manifest.webmanifest"
 ];
 
