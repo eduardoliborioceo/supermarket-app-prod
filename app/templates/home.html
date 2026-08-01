@@ -102,14 +102,14 @@
                     </div>
 
                     <div class="produto-actions">
+                        <div class="hint">
+                            Toque no preço para editar
+                        </div>
+
                         <div class="qtd">
                             <button class="btn-menos" aria-label="Diminuir">−</button>
                             <span class="qtd-valor">{{ p.qtd_carrinho }}</span>
                             <button class="btn-mais" aria-label="Aumentar">+</button>
-                        </div>
-
-                        <div class="hint">
-                            Toque no preço para editar
                         </div>
                     </div>
                 </div>
@@ -482,12 +482,12 @@ function adicionarCardNaLista(nome, preco, setor, id) {
             </div>
         </div>
         <div class="produto-actions">
+            <div class="hint">Toque no preço para editar</div>
             <div class="qtd">
                 <button class="btn-menos" aria-label="Diminuir">−</button>
                 <span class="qtd-valor">0</span>
                 <button class="btn-mais" aria-label="Aumentar">+</button>
             </div>
-            <div class="hint">Toque no preço para editar</div>
         </div>`;
     items.appendChild(card);
     ativarEventosProduto(card);
