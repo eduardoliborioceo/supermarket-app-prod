@@ -237,28 +237,47 @@ a { color: inherit; }
     min-width: 0;
 }
 
-.cat-nav {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 5px;
-    flex-shrink: 0;
-}
-
-.cat-dot {
-    width: 20px;
-    height: 20px;
-    border-radius: 5px;
+.cat-cycle {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 2px;
+    min-width: 108px;
+    max-width: 140px;
+    padding: 8px 14px;
     border: none;
+    border-radius: 12px;
     background: var(--dot-color);
+    color: #fff;
     cursor: pointer;
-    opacity: 0.80;
-    transition: opacity 0.15s ease, transform 0.12s ease;
-    padding: 0;
+    flex-shrink: 0;
+    transition: transform 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
 }
 
-.cat-dot:active {
-    opacity: 1;
-    transform: scale(0.88);
+.cat-cycle:active {
+    transform: scale(0.96);
+}
+
+.cat-cycle-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    opacity: 0.85;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.cat-cycle-value {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: -0.2px;
+    white-space: nowrap;
 }
 
 .kpi-input input {

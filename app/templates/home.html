@@ -23,12 +23,10 @@
                     <span>Saldo disponível</span>
                     <strong id="saldo-disponivel">R$ 0,00</strong>
                 </div>
-                <div class="cat-nav">
-                    <button class="cat-dot" style="--dot-color:#3b82f6" onclick="scrollParaCategoria(0)" type="button"></button>
-                    <button class="cat-dot" style="--dot-color:#f59e0b" onclick="scrollParaCategoria(1)" type="button"></button>
-                    <button class="cat-dot" style="--dot-color:#10b981" onclick="scrollParaCategoria(2)" type="button"></button>
-                    <button class="cat-dot" style="--dot-color:#8b5cf6" onclick="scrollParaCategoria(3)" type="button"></button>
-                </div>
+                <button type="button" class="cat-cycle" id="cat-cycle" style="--dot-color:#3b82f6">
+                    <span class="cat-cycle-label" id="cat-cycle-label"></span>
+                    <span class="cat-cycle-value" id="cat-cycle-value">R$ 0,00</span>
+                </button>
             </div>
         </div>
     </div>
@@ -203,6 +201,8 @@
 let categoriaAtual = null;
 let deferredInstallPrompt = null;
 const gastoPrevistoServidor = {{ gasto_previsto or 0 }};
+const CATEGORIAS = {{ categorias | tojson }};
+const CAT_CYCLE_CORES = ["#3b82f6", "#f59e0b", "#10b981", "#8b5cf6"];
 const carrinhoTimers = {};
 const carrinhoUltimoEnvio = {};
 let gastoPrevistoTimer = null;
@@ -302,6 +302,36 @@ function calcularTotais() {
 
     document.getElementById("saldo-disponivel").innerText =
         formatar(gastoPrevisto - total);
+
+    atualizarCatCycle();
+}
+
+let catCycleIndex = 0;
+
+function totalDaCategoria(nome) {
+    const cards = document.querySelectorAll(".category-card");
+    for (const card of cards) {
+        if (card.dataset.categoria === nome) {
+            return card.querySelector(".category-total")?.innerText || formatar(0);
+        }
+    }
+    return formatar(0);
+}
+
+function atualizarCatCycle() {
+    const btn = document.getElementById("cat-cycle");
+    if (!btn || !CATEGORIAS.length) return;
+
+    const nome = CATEGORIAS[catCycleIndex];
+    btn.style.setProperty("--dot-color", CAT_CYCLE_CORES[catCycleIndex % CAT_CYCLE_CORES.length]);
+    document.getElementById("cat-cycle-label").innerText = nome;
+    document.getElementById("cat-cycle-value").innerText = totalDaCategoria(nome);
+}
+
+function avancarCatCycle() {
+    if (!CATEGORIAS.length) return;
+    catCycleIndex = (catCycleIndex + 1) % CATEGORIAS.length;
+    atualizarCatCycle();
 }
 
 function ativarEventosProduto(card) {
@@ -485,14 +515,37 @@ window.addEventListener("load", () => {
         kpiBar.style.top = header.offsetHeight + "px";
     }
 
-    document.querySelectorAll(".cat-dot").forEach((dot, i) => {
-        const cards = document.querySelectorAll(".category-card");
-        if (cards[i]) {
-            dot.title = cards[i].querySelector("h2")?.innerText || "";
-        } else {
-            dot.style.display = "none";
-        }
-    });
+    const catCycleBtn = document.getElementById("cat-cycle");
+    if (catCycleBtn) {
+        const LONG_PRESS_MS = 500;
+        let pressTimer = null;
+        let longPressDisparado = false;
+
+        const iniciarPressao = () => {
+            longPressDisparado = false;
+            pressTimer = setTimeout(() => {
+                longPressDisparado = true;
+                scrollParaCategoria(catCycleIndex);
+            }, LONG_PRESS_MS);
+        };
+
+        const cancelarPressao = () => clearTimeout(pressTimer);
+
+        catCycleBtn.addEventListener("pointerdown", iniciarPressao);
+        catCycleBtn.addEventListener("pointerup", cancelarPressao);
+        catCycleBtn.addEventListener("pointerleave", cancelarPressao);
+        catCycleBtn.addEventListener("pointercancel", cancelarPressao);
+
+        catCycleBtn.addEventListener("click", () => {
+            if (longPressDisparado) {
+                longPressDisparado = false;
+                return;
+            }
+            avancarCatCycle();
+        });
+
+        atualizarCatCycle();
+    }
 
     if (isIos() && !isInStandaloneMode()) {
         document.getElementById("btn-instalar").style.display = "inline-flex";
