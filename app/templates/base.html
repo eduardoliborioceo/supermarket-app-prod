@@ -12,7 +12,7 @@
 
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/logos/pwa-192.png') }}">
     <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}">
+          href="{{ url_for('static', filename='css/style.css') }}?v={{ ASSET_VERSION }}">
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
@@ -183,9 +183,9 @@
 
 <div id="toast-container"></div>
 
-<script src="{{ url_for('static', filename='js/main.js') }}"></script>
-<script src="{{ url_for('static', filename='js/camera.js') }}"></script>
-<script src="{{ url_for('static', filename='js/voz.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}?v={{ ASSET_VERSION }}"></script>
+<script src="{{ url_for('static', filename='js/camera.js') }}?v={{ ASSET_VERSION }}"></script>
+<script src="{{ url_for('static', filename='js/voz.js') }}?v={{ ASSET_VERSION }}"></script>
 
 <script>
 function paginaEmBreve() {
