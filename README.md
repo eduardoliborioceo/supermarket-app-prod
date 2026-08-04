@@ -68,10 +68,11 @@ supermarket-system/
 ## 🚀 Funcionalidades
 ### 1. Cadastro de produtos por categoria:
 
-* Alimentos Principais
+* Principais
 * Complementos
 * Temperos
-* Higiene e Limpeza
+* Saúde e Higiene
+* Bebidas
 
 ### 2. Ajuste de quantidade com botões + / −
 
