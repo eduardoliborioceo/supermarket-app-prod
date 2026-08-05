@@ -1,0 +1,16 @@
+# Local machine config — contains the absolute path to your Android SDK install.
+local.properties
+
+# Gradle
+.gradle/
+build/
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+.cxx/
+captures/
+
+# Signing (never commit real release keystores)
+*.jks
+*.keystore
