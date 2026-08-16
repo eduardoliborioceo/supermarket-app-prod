@@ -11,6 +11,18 @@ build/
 .cxx/
 captures/
 
-# Signing (never commit real release keystores)
+# Signing (never commit real release keystores or their credentials)
 *.jks
 *.keystore
+*.p12
+*.pfx
+keystore.properties
+key.properties
+
+# Google OAuth / Firebase client config (contains client IDs/secrets)
+google-services.json
+*google-services*.json
+
+# Any other local secret/credential file dropped here by mistake
+*.env
+.env*

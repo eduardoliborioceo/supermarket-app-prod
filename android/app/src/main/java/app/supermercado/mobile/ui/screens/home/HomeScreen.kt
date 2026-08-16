@@ -2,6 +2,7 @@ package app.supermercado.mobile.ui.screens.home
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -18,6 +19,7 @@ import app.supermercado.mobile.ui.theme.SupermercadoTheme
  * categoria/setor com os cards de app/templates/home.html, alimentados por
  * GET /api/produtos (ou equivalente) via um ProdutoRepository + HomeViewModel.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen() {
     Scaffold(
