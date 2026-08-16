@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Mirrors sidebar-bg / theme_color from app/static/manifest.webmanifest -->
-    <color name="splash_background">#0F172A</color>
+    <!-- Background of the single Android 12+ system splash screen (logo +
+         branding image). Must match the app's own surface color so there is
+         no flash when it hands off to the first real screen. -->
+    <color name="splash_background">#FFFFFFFF</color>
 </resources>

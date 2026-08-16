@@ -7,7 +7,16 @@
     -->
     <style name="Theme.Supermercado.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/splash_background</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <!-- Dedicated asset (extra padding) because the system splash icon
+             masks anything outside its ~66% safe-zone circle; the raw
+             launcher icon fills too close to the edge and gets clipped. -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_supermercado_logo_splash</item>
+        <!-- Text-as-image ("From" / "Vertex Code"), same brand pattern as
+             Instagram's "from Meta" mark, rendered by the system splash
+             itself so there is a single splash screen, not two in sequence.
+             Framework attribute (API 31+, no androidx compat equivalent) —
+             a safe no-op on minSdk 26-30, where only the icon splash shows. -->
+        <item name="android:windowSplashScreenBrandingImage">@drawable/ic_supermercado_splash_branding</item>
         <item name="postSplashScreenTheme">@style/Theme.Supermercado</item>
     </style>
 
