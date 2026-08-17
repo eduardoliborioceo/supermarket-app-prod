@@ -8,6 +8,7 @@ from app.services.produto_service import ProdutoService
 from app.services.supermercado_service import SupermercadoService
 from app.services.itens_padrao_service import ItensPadraoService
 from app.services.compra_service import CompraService
+from app.services.auth_token_service import AuthTokenService
 from app.routes.auth import login_required
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
@@ -15,6 +16,47 @@ api_bp = Blueprint("api", __name__, url_prefix="/api")
 
 def _bad_request(msg, status=400):
     return jsonify({"status": "error", "message": msg}), status
+
+
+@api_bp.route("/auth/token", methods=["POST"])
+def trocar_codigo_por_token():
+    data = request.get_json(silent=True) or {}
+    codigo = (data.get("code") or "").strip()
+    if not codigo:
+        return _bad_request("Código obrigatório.")
+
+    with db_cursor() as cur:
+        usuario_id = AuthTokenService.trocar_codigo(cur, codigo)
+        if usuario_id is None:
+            return _bad_request("Código inválido ou expirado.", status=401)
+        tokens = AuthTokenService.emitir_par_tokens(cur, usuario_id)
+
+    return jsonify({"status": "ok", **tokens})
+
+
+@api_bp.route("/auth/refresh", methods=["POST"])
+def renovar_token():
+    data = request.get_json(silent=True) or {}
+    refresh_token = (data.get("refresh_token") or "").strip()
+    if not refresh_token:
+        return _bad_request("Refresh token obrigatório.")
+
+    with db_cursor() as cur:
+        tokens = AuthTokenService.renovar_par_tokens(cur, refresh_token)
+
+    if tokens is None:
+        return _bad_request("Refresh token inválido ou expirado.", status=401)
+    return jsonify({"status": "ok", **tokens})
+
+
+@api_bp.route("/auth/logout", methods=["POST"])
+def logout_mobile():
+    data = request.get_json(silent=True) or {}
+    refresh_token = (data.get("refresh_token") or "").strip()
+    if refresh_token:
+        with db_cursor() as cur:
+            AuthTokenService.revogar_refresh_token(cur, refresh_token)
+    return jsonify({"status": "ok"})
 
 
 @api_bp.route("/seed-defaults", methods=["POST"])
