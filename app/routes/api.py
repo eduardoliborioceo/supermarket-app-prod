@@ -103,6 +103,28 @@ def selecionar_supermercado():
     return jsonify({"status": "ok"})
 
 
+@api_bp.route("/home")
+@login_required
+def home_dados():
+    with db_cursor() as cur:
+        dados = ProdutoService.montar_home(cur, session["user_id"])
+    return jsonify({
+        "status": "ok",
+        "categorias": dados["categorias"],
+        "gasto_previsto": dados["gasto_previsto"],
+        "produtos": [
+            {
+                "id": p["id"],
+                "nome": p["nome"],
+                "setor": p["setor"],
+                "qtd_carrinho": p["qtd_carrinho"],
+                "preco_carrinho": p["preco_carrinho"],
+            }
+            for p in dados["produtos"]
+        ],
+    })
+
+
 @api_bp.route("/produto/buscar")
 @login_required
 def buscar_produto():
