@@ -115,6 +115,29 @@ def init_db(app):
             ADD COLUMN IF NOT EXISTS gasto_previsto NUMERIC DEFAULT 0;
         """)
 
+        # Fase 2 do app nativo: JWT (access + refresh) ao lado da sessão de
+        # cookie que o site/PWA continua usando — ver PLANO-MIGRACAO-ANDROID-NATIVO.md
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS refresh_tokens (
+                id SERIAL PRIMARY KEY,
+                usuario_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+                token_hash TEXT UNIQUE NOT NULL,
+                criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                expira_em TIMESTAMP NOT NULL,
+                revogado_em TIMESTAMP
+            );
+        """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS oauth_exchange_codes (
+                id SERIAL PRIMARY KEY,
+                usuario_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+                code_hash TEXT UNIQUE NOT NULL,
+                criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                expira_em TIMESTAMP NOT NULL,
+                usado_em TIMESTAMP
+            );
+        """)
+
         conn.commit()
         cur.close()
         conn.close()
