@@ -125,6 +125,21 @@ def home_dados():
     })
 
 
+@api_bp.route("/produtos")
+@login_required
+def listar_produtos():
+    with db_cursor() as cur:
+        produtos = ProdutoRepository.list_all(cur, session["user_id"])
+    return jsonify({
+        "status": "ok",
+        "categorias": ProdutoService.montar_categorias(produtos),
+        "produtos": [
+            {"id": p["id"], "nome": p["nome"], "setor": p["setor"], "ultimo_preco": float(p["ultimo_preco"])}
+            for p in produtos
+        ],
+    })
+
+
 @api_bp.route("/produto/buscar")
 @login_required
 def buscar_produto():

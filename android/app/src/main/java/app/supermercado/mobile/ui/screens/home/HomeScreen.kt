@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Remove
@@ -43,12 +44,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import app.supermercado.mobile.core.util.formatarMoeda
+import app.supermercado.mobile.core.util.parseMoeda
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.supermercado.mobile.ui.theme.SupermercadoColorTokens
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
+fun HomeScreen(onAbrirProdutos: () -> Unit = {}, viewModel: HomeViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var dialogAdicionarAberto by rememberSaveable { mutableStateOf(false) }
     var categoriaParaNovoProduto by rememberSaveable { mutableStateOf<String?>(null) }
@@ -60,6 +63,9 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
             TopAppBar(
                 title = { Text("Lista de Compras") },
                 actions = {
+                    IconButton(onClick = onAbrirProdutos) {
+                        Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Produtos")
+                    }
                     IconButton(onClick = { confirmarLimparAberto = true }) {
                         Icon(Icons.Filled.Delete, contentDescription = "Limpar carrinho")
                     }
