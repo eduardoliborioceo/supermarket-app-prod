@@ -2,6 +2,10 @@ package app.supermercado.mobile.core.di
 
 import app.supermercado.mobile.BuildConfig
 import app.supermercado.mobile.core.data.auth.AuthApi
+import app.supermercado.mobile.core.data.carrinho.CarrinhoApi
+import app.supermercado.mobile.core.data.home.HomeApi
+import app.supermercado.mobile.core.data.produtos.ProdutoApi
+import app.supermercado.mobile.core.network.AuthInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,11 +25,11 @@ import java.util.concurrent.TimeUnit
  * CLAUDE.md). Repositories dependem só das interfaces de API (`AuthApi`
  * etc.), nunca do Retrofit diretamente.
  *
- * `AuthApi` não carrega o `Authorization: Bearer` (os endpoints de
- * login/refresh são o próprio ponto de entrada da sessão), então o
- * interceptor de autenticação entra aqui só quando o primeiro endpoint de
- * negócio autenticado (produtos/carrinho, Fase 3) for adicionado a este
- * módulo — não antecipar essa peça sem um consumidor real ainda.
+ * `AuthInterceptor` só lê o token salvo (nunca chama `AuthApi`), então não
+ * cria dependência circular com este mesmo Retrofit/OkHttpClient que também
+ * fornece a `AuthApi`. Renovação reativa em 401 (Authenticator) fica pra
+ * quando isso se mostrar necessário na prática — hoje a Home já renova a
+ * sessão proativamente no cold start (AutoLoginScreen).
  */
 @Module
 @InstallIn(SingletonComponent::class)
@@ -37,13 +41,14 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
+    fun provideOkHttpClient(authInterceptor: AuthInterceptor): OkHttpClient {
         val loggingInterceptor = HttpLoggingInterceptor().apply {
             level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
         }
         return OkHttpClient.Builder()
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(15, TimeUnit.SECONDS)
+            .addInterceptor(authInterceptor)
             .addInterceptor(loggingInterceptor)
             .build()
     }
@@ -60,4 +65,16 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideAuthApi(retrofit: Retrofit): AuthApi = retrofit.create(AuthApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideHomeApi(retrofit: Retrofit): HomeApi = retrofit.create(HomeApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideCarrinhoApi(retrofit: Retrofit): CarrinhoApi = retrofit.create(CarrinhoApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideProdutoApi(retrofit: Retrofit): ProdutoApi = retrofit.create(ProdutoApi::class.java)
 }
