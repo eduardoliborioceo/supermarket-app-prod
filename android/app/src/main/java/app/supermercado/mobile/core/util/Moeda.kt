@@ -1,4 +1,4 @@
-package app.supermercado.mobile.ui.screens.home
+package app.supermercado.mobile.core.util
 
 import java.util.Locale
 
