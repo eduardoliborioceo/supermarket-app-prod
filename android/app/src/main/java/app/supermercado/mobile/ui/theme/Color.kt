@@ -25,4 +25,19 @@ object SupermercadoColorTokens {
     val sidebarTextActive = Color(0xFFFFFFFF)
     val sidebarActiveAccent = Color(0xFF3B82F6)
     val sidebarActiveBackground = Color(0x293B82F6)
+
+    /**
+     * Paleta rotativa de categorias, portada 1:1 de `.category-card:nth-child(4n+N)`
+     * em `app/static/css/style.css` — cada categoria da Home/Produtos usa uma
+     * cor por posição (não por identidade), igual ao CSS.
+     */
+    val categoryPalette = listOf(
+        Color(0xFF3B82F6), // azul
+        Color(0xFFF59E0B), // âmbar
+        Color(0xFF10B981), // verde
+        Color(0xFF8B5CF6), // roxo
+    )
+
+    fun categoryColor(index: Int): Color = categoryPalette[index % categoryPalette.size]
+    fun categoryTint(index: Int): Color = categoryColor(index).copy(alpha = 0.09f)
 }

@@ -12,3 +12,6 @@ val SupermercadoShapes = Shapes(
     large = RoundedCornerShape(14.dp),
     extraLarge = RoundedCornerShape(24.dp),
 )
+
+/** Forma de pílula usada em preço, contador de quantidade e badges — `border-radius: 999px` no CSS. */
+val PillShape = RoundedCornerShape(percent = 50)
