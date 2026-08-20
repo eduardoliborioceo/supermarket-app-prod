@@ -17,6 +17,7 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.Store
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -51,7 +52,11 @@ import app.supermercado.mobile.ui.theme.SupermercadoColorTokens
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(onAbrirProdutos: () -> Unit = {}, viewModel: HomeViewModel = hiltViewModel()) {
+fun HomeScreen(
+    onAbrirProdutos: () -> Unit = {},
+    onAbrirSupermercado: () -> Unit = {},
+    viewModel: HomeViewModel = hiltViewModel(),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var dialogAdicionarAberto by rememberSaveable { mutableStateOf(false) }
     var categoriaParaNovoProduto by rememberSaveable { mutableStateOf<String?>(null) }
@@ -63,6 +68,9 @@ fun HomeScreen(onAbrirProdutos: () -> Unit = {}, viewModel: HomeViewModel = hilt
             TopAppBar(
                 title = { Text("Lista de Compras") },
                 actions = {
+                    IconButton(onClick = onAbrirSupermercado) {
+                        Icon(Icons.Filled.Store, contentDescription = "Selecionar supermercado")
+                    }
                     IconButton(onClick = onAbrirProdutos) {
                         Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Produtos")
                     }

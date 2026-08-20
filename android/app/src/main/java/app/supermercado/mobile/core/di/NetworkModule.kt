@@ -5,6 +5,7 @@ import app.supermercado.mobile.core.data.auth.AuthApi
 import app.supermercado.mobile.core.data.carrinho.CarrinhoApi
 import app.supermercado.mobile.core.data.home.HomeApi
 import app.supermercado.mobile.core.data.produtos.ProdutoApi
+import app.supermercado.mobile.core.data.supermercado.SupermercadoApi
 import app.supermercado.mobile.core.network.AuthInterceptor
 import dagger.Module
 import dagger.Provides
@@ -77,4 +78,8 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideProdutoApi(retrofit: Retrofit): ProdutoApi = retrofit.create(ProdutoApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideSupermercadoApi(retrofit: Retrofit): SupermercadoApi = retrofit.create(SupermercadoApi::class.java)
 }

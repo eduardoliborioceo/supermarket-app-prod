@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify, session, current_app
 from app.extensions import db_cursor
 from app.repositories.produto_repository import ProdutoRepository
 from app.repositories.supermercado_repository import SupermercadoRepository
@@ -65,6 +65,20 @@ def seed_defaults():
     with db_cursor() as cur:
         ItensPadraoService.popular_todos(cur, session["user_id"])
     return jsonify({"status": "ok"})
+
+
+@api_bp.route("/supermercado/atual")
+@login_required
+def supermercado_atual():
+    with db_cursor() as cur:
+        supermercado = SupermercadoRepository.get_by_usuario(cur, session["user_id"])
+    return jsonify({
+        "status": "ok",
+        "has_api": bool(current_app.config.get("GOOGLE_MAPS_API_KEY")),
+        "supermercado_nome": supermercado.get("supermercado_nome") if supermercado else None,
+        "supermercado_endereco": supermercado.get("supermercado_endereco") if supermercado else None,
+        "supermercado_place_id": supermercado.get("supermercado_place_id") if supermercado else None,
+    })
 
 
 @api_bp.route("/supermercados/buscar")
