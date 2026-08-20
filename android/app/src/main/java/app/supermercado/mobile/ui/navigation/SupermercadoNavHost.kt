@@ -9,19 +9,22 @@ import app.supermercado.mobile.ui.screens.auth.LoginScreen
 import app.supermercado.mobile.ui.screens.autologin.AutoLoginScreen
 import app.supermercado.mobile.ui.screens.home.HomeScreen
 import app.supermercado.mobile.ui.screens.produtos.ProdutosScreen
+import app.supermercado.mobile.ui.screens.supermercado.SelecionarSupermercadoScreen
 
 /**
  * Grafo da Fase 2/3 do plano de migracao (docs/mobile-nativo): AutoLogin
  * decide entre Home (refresh token salvo, renovado em silencio) e Login
- * (Google OAuth). Selecionar Supermercado e o menu inferior entram quando
- * essa tela tambem existir nativamente — navegacao ad-hoc (botao no
- * TopAppBar) ate lá, pra nao criar abas vazias.
+ * (Google OAuth). Paridade de feature com o web (Fase 3) completa com
+ * Produtos e Selecionar Supermercado — navegacao ad-hoc (botoes no TopAppBar
+ * da Home) ate essas telas, sem menu inferior por enquanto (poucas abas pra
+ * justificar uma bottom nav ainda).
  */
 object SupermercadoDestinations {
     const val AUTO_LOGIN = "auto_login"
     const val LOGIN = "login"
     const val HOME = "home"
     const val PRODUTOS = "produtos"
+    const val SUPERMERCADO = "supermercado"
 }
 
 @Composable
@@ -51,10 +54,16 @@ fun SupermercadoNavHost(navController: NavHostController = rememberNavController
             )
         }
         composable(SupermercadoDestinations.HOME) {
-            HomeScreen(onAbrirProdutos = { navController.navigate(SupermercadoDestinations.PRODUTOS) })
+            HomeScreen(
+                onAbrirProdutos = { navController.navigate(SupermercadoDestinations.PRODUTOS) },
+                onAbrirSupermercado = { navController.navigate(SupermercadoDestinations.SUPERMERCADO) },
+            )
         }
         composable(SupermercadoDestinations.PRODUTOS) {
             ProdutosScreen(onVoltar = { navController.popBackStack() })
+        }
+        composable(SupermercadoDestinations.SUPERMERCADO) {
+            SelecionarSupermercadoScreen(onVoltar = { navController.popBackStack() })
         }
     }
 }
