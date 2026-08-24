@@ -75,7 +75,7 @@ ITENS_PADRAO = {
         "Tempero Baiano 100g",
         "Vinagre 750ml",
     ],
-    "Saúde e Higiene": [
+    "Higiene e Limpeza": [
         "Algodão Pct",
         "Álcool em Gel 500ml",
         "Amaciante 2L",
