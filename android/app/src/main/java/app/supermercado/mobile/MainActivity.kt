@@ -12,7 +12,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-/** Minimum time the branded system splash (logo + "From Vertex Code") stays
+/** Minimum time the branded system splash (logo + "From Droid Codes") stays
  * on screen before handing off to the first real screen, so the brand intro
  * is readable even on fast devices. */
 private const val SPLASH_MIN_DISPLAY_DURATION_MS = 1600L
