@@ -27,14 +27,6 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <!-- Retorno da Custom Tab do login Google (app/routes/auth.py
-                 redireciona pra cá com ?code=... depois do OAuth). -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="app.supermercado.mobile" android:host="oauth-callback" />
-            </intent-filter>
         </activity>
     </application>
 

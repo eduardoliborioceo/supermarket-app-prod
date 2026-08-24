@@ -1,8 +1,7 @@
 from functools import wraps
 from flask import Blueprint, redirect, url_for, session, render_template, current_app, request, jsonify
 from app.extensions import oauth, db_cursor
-from app.repositories.usuario_repository import UsuarioRepository
-from app.services.itens_padrao_service import ItensPadraoService
+from app.services.usuario_service import UsuarioService
 from app.services.auth_token_service import AuthTokenService
 
 auth_bp = Blueprint("auth", __name__)
@@ -64,14 +63,13 @@ def google_callback():
         return redirect(url_for("auth.login"))
 
     with db_cursor() as cur:
-        user = UsuarioRepository.find_or_create(
+        user = UsuarioService.autenticar_google(
             cur,
             google_id=user_info["sub"],
             email=user_info["email"],
             nome=user_info.get("name", ""),
             foto_url=user_info.get("picture", ""),
         )
-        ItensPadraoService.popular_se_novo(cur, user["id"])
 
     session["user_id"] = user["id"]
     session["user_nome"] = user["nome"]

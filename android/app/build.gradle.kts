@@ -25,6 +25,13 @@ android {
         // o plano de expor autenticacao JWT nesse mesmo Flask, ou, se o projeto
         // crescer, um servico Railway irmao compartilhando o mesmo Postgres.
         buildConfigField("String", "API_BASE_URL", "\"https://web-production-7f935.up.railway.app/\"")
+        // Client OAuth Web (Google Cloud Console) — o mesmo que o Flask/Authlib
+        // ja usa (GOOGLE_CLIENT_ID). E esse valor, e nao o Client ID Android
+        // recem-criado, que o Credential Manager usa como "server client id":
+        // o token retornado tem esse client como audience, que o backend
+        // valida em POST /api/auth/google-idtoken. O Client ID Android so
+        // precisa ter o SHA-1 do keystore certo cadastrado no Console.
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"810872580837-16gf6jfej6ku7b1nc69v15bt1uabrg10.apps.googleusercontent.com\"")
     }
 
     buildTypes {
@@ -97,8 +104,10 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.biometric)
-    implementation(libs.androidx.browser)
     implementation(libs.androidx.security.crypto)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.google.identity.googleid)
 
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)

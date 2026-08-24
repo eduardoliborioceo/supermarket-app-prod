@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class TrocarCodigoRequestDto(val code: String)
+data class GoogleIdTokenRequestDto(@SerialName("id_token") val idToken: String)
 
 @Serializable
 data class RefreshRequestDto(@SerialName("refresh_token") val refreshToken: String)

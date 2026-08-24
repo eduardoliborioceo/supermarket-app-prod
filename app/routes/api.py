@@ -9,6 +9,7 @@ from app.services.supermercado_service import SupermercadoService
 from app.services.itens_padrao_service import ItensPadraoService
 from app.services.compra_service import CompraService
 from app.services.auth_token_service import AuthTokenService
+from app.services.usuario_service import UsuarioService
 from app.routes.auth import login_required
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
@@ -30,6 +31,33 @@ def trocar_codigo_por_token():
         if usuario_id is None:
             return _bad_request("Código inválido ou expirado.", status=401)
         tokens = AuthTokenService.emitir_par_tokens(cur, usuario_id)
+
+    return jsonify({"status": "ok", **tokens})
+
+
+@api_bp.route("/auth/google-idtoken", methods=["POST"])
+def login_com_google_idtoken():
+    """Login nativo Android via Credential Manager (sem navegador): o app
+    troca o ID token do Google direto por um par de tokens JWT, sem passar
+    pelo fluxo de Custom Tab + código de troca usado antes."""
+    data = request.get_json(silent=True) or {}
+    id_token_str = (data.get("id_token") or "").strip()
+    if not id_token_str:
+        return _bad_request("Token do Google obrigatório.")
+
+    claims = AuthTokenService.verificar_id_token_google(id_token_str)
+    if claims is None:
+        return _bad_request("Token do Google inválido ou expirado.", status=401)
+
+    with db_cursor() as cur:
+        user = UsuarioService.autenticar_google(
+            cur,
+            google_id=claims["sub"],
+            email=claims["email"],
+            nome=claims.get("name", ""),
+            foto_url=claims.get("picture", ""),
+        )
+        tokens = AuthTokenService.emitir_par_tokens(cur, user["id"])
 
     return jsonify({"status": "ok", **tokens})
 
