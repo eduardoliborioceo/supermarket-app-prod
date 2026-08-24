@@ -71,7 +71,7 @@ supermarket-system/
 * Principais
 * Complementos
 * Temperos
-* Saúde e Higiene
+* Higiene e Limpeza
 * Bebidas
 
 ### 2. Ajuste de quantidade com botões + / −

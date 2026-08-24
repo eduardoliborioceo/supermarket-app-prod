@@ -8,7 +8,7 @@ CATEGORIAS_PADRAO = [
     "Principais",
     "Complementos",
     "Temperos",
-    "Saúde e Higiene",
+    "Higiene e Limpeza",
     "Bebidas",
 ]
 
