@@ -15,13 +15,19 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -40,9 +46,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -60,6 +68,8 @@ import app.supermercado.mobile.ui.components.PillBadge
 import app.supermercado.mobile.ui.components.QtyStepper
 import app.supermercado.mobile.ui.theme.PillShape
 import app.supermercado.mobile.ui.theme.SupermercadoColorTokens
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 private val CardRadius = RoundedCornerShape(16.dp)
 
@@ -73,6 +83,18 @@ fun HomeScreen(
     var categoriaParaNovoProduto by rememberSaveable { mutableStateOf<String?>(null) }
     var confirmarLimparAberto by rememberSaveable { mutableStateOf(false) }
     var mensagemErroAcao by remember { mutableStateOf<String?>(null) }
+    var buscaAberta by rememberSaveable { mutableStateOf(false) }
+    var produtoDestacadoId by remember { mutableStateOf<Int?>(null) }
+    var catCycleIndex by rememberSaveable { mutableStateOf(0) }
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(produtoDestacadoId) {
+        if (produtoDestacadoId != null) {
+            delay(2500)
+            produtoDestacadoId = null
+        }
+    }
 
     Scaffold(
         containerColor = SupermercadoColorTokens.background,
@@ -83,6 +105,9 @@ fun HomeScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = SupermercadoColorTokens.surface),
                 windowInsets = WindowInsets(0, 0, 0, 0),
                 actions = {
+                    IconButton(onClick = { buscaAberta = true }) {
+                        Icon(Icons.Filled.Search, contentDescription = "Buscar produto", tint = SupermercadoColorTokens.onSurfaceMuted)
+                    }
                     IconButton(onClick = { confirmarLimparAberto = true }) {
                         Icon(Icons.Filled.Delete, contentDescription = "Limpar carrinho", tint = SupermercadoColorTokens.error)
                     }
@@ -120,11 +145,22 @@ fun HomeScreen(
                             totalAtual = state.totalAtual,
                             gastoPrevisto = state.gastoPrevisto,
                             saldoDisponivel = state.saldoDisponivel,
+                            categorias = state.categorias,
+                            catCycleIndex = catCycleIndex,
                             onGastoPrevistoChange = viewModel::alterarGastoPrevisto,
+                            onAvancarCategoria = {
+                                if (state.categorias.isNotEmpty()) {
+                                    catCycleIndex = (catCycleIndex + 1) % state.categorias.size
+                                }
+                            },
+                            onIrParaCategoria = {
+                                coroutineScope.launch { listState.animateScrollToItem(catCycleIndex) }
+                            },
                             modifier = Modifier.padding(16.dp),
                         )
                     }
                     LazyColumn(
+                        state = listState,
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(14.dp),
@@ -134,6 +170,7 @@ fun HomeScreen(
                                 categoria = categoria,
                                 corCategoria = SupermercadoColorTokens.categoryColor(index),
                                 fundoCategoria = SupermercadoColorTokens.categoryTint(index),
+                                produtoDestacadoId = produtoDestacadoId,
                                 onQtdChange = viewModel::alterarQuantidade,
                                 onPrecoChange = viewModel::alterarPreco,
                                 onAdicionarClick = {
@@ -193,6 +230,23 @@ fun HomeScreen(
             },
         )
     }
+
+    if (buscaAberta) {
+        BuscaProdutoDialog(
+            onDismiss = { buscaAberta = false },
+            onProdutoSelecionado = { produtoId ->
+                buscaAberta = false
+                val indiceCategoria = state.categorias.indexOfFirst { categoria -> categoria.produtos.any { it.id == produtoId } }
+                if (indiceCategoria != -1) {
+                    produtoDestacadoId = produtoId
+                    coroutineScope.launch {
+                        delay(150)
+                        listState.animateScrollToItem(indiceCategoria)
+                    }
+                }
+            },
+        )
+    }
 }
 
 @Composable
@@ -220,7 +274,11 @@ private fun KpiRow(
     totalAtual: Double,
     gastoPrevisto: Double,
     saldoDisponivel: Double,
+    categorias: List<CategoriaUi>,
+    catCycleIndex: Int,
     onGastoPrevistoChange: (Double) -> Unit,
+    onAvancarCategoria: () -> Unit,
+    onIrParaCategoria: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var textoGasto by rememberSaveable(gastoPrevisto) {
@@ -259,19 +317,76 @@ private fun KpiRow(
             border = BorderStroke(1.dp, corSaldo.copy(alpha = 0.25f)),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         ) {
-            Column(
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Brush.verticalGradient(listOf(corSaldo.copy(alpha = 0.10f), Color.Transparent)))
                     .padding(horizontal = 14.dp, vertical = 10.dp),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("Saldo disponível", style = MaterialTheme.typography.labelMedium, color = SupermercadoColorTokens.onSurfaceMuted)
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text("Saldo disponível", style = MaterialTheme.typography.labelMedium, color = SupermercadoColorTokens.onSurfaceMuted)
+                    Text(
+                        formatarMoeda(saldoDisponivel),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = corSaldo,
+                    )
+                }
+                if (categorias.isNotEmpty()) {
+                    CategoriaCycleBadge(
+                        categorias = categorias,
+                        index = catCycleIndex,
+                        onClick = onAvancarCategoria,
+                        onLongClick = onIrParaCategoria,
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** Porta o `.cat-cycle` do PWA (home.html/main.js): mostra o total de uma
+ * categoria por vez dentro do card de Saldo disponível. Toque avança pra
+ * próxima categoria (só pra consultar o total); toque longo rola a lista até
+ * o início dela. */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun CategoriaCycleBadge(
+    categorias: List<CategoriaUi>,
+    index: Int,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+) {
+    val indiceSeguro = index % categorias.size
+    val categoria = categorias[indiceSeguro]
+    val cor = SupermercadoColorTokens.categoryColor(indiceSeguro)
+
+    Surface(
+        shape = PillShape,
+        color = SupermercadoColorTokens.surface,
+        border = BorderStroke(1.dp, cor.copy(alpha = 0.4f)),
+        modifier = Modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(modifier = Modifier.size(8.dp).background(cor, CircleShape))
+            Spacer(modifier = Modifier.width(6.dp))
+            Column {
                 Text(
-                    formatarMoeda(saldoDisponivel),
-                    style = MaterialTheme.typography.titleLarge,
+                    categoria.nome,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = SupermercadoColorTokens.onSurfaceMuted,
+                    maxLines = 1,
+                )
+                Text(
+                    formatarMoeda(categoria.total),
+                    style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
-                    color = corSaldo,
+                    maxLines = 1,
                 )
             }
         }
@@ -310,6 +425,7 @@ private fun CategoriaSection(
     categoria: CategoriaUi,
     corCategoria: Color,
     fundoCategoria: Color,
+    produtoDestacadoId: Int?,
     onQtdChange: (Int, Int) -> Unit,
     onPrecoChange: (Int, Double) -> Unit,
     onAdicionarClick: () -> Unit,
@@ -365,6 +481,7 @@ private fun CategoriaSection(
                         ProdutoCard(
                             produto = produto,
                             corCategoria = corCategoria,
+                            destacado = produto.id == produtoDestacadoId,
                             onQtdChange = { delta -> onQtdChange(produto.id, delta) },
                             onPrecoChange = { novoPreco -> onPrecoChange(produto.id, novoPreco) },
                         )
@@ -375,19 +492,34 @@ private fun CategoriaSection(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ProdutoCard(
     produto: ProdutoUi,
     corCategoria: Color,
+    destacado: Boolean,
     onQtdChange: (Int) -> Unit,
     onPrecoChange: (Double) -> Unit,
 ) {
     var editandoPreco by remember { mutableStateOf(false) }
     var textoPreco by remember(produto.precoCarrinho) { mutableStateOf(produto.precoCarrinho.toString()) }
+    val bringIntoViewRequester = remember { BringIntoViewRequester() }
+
+    // A rolagem grosseira (listState.animateScrollToItem na Home) só chega no
+    // topo da categoria — os produtos não são itens do LazyColumn, ficam
+    // dentro do Card da categoria. Esse efeito faz o ajuste fino assim que
+    // este card específico entra na composição (a categoria já visível).
+    LaunchedEffect(destacado) {
+        if (destacado) {
+            delay(300)
+            bringIntoViewRequester.bringIntoView()
+        }
+    }
 
     Card(
+        modifier = Modifier.bringIntoViewRequester(bringIntoViewRequester),
         colors = CardDefaults.cardColors(containerColor = SupermercadoColorTokens.surface),
-        border = BorderStroke(1.dp, SupermercadoColorTokens.border),
+        border = BorderStroke(if (destacado) 2.dp else 1.dp, if (destacado) SupermercadoColorTokens.primary else SupermercadoColorTokens.border),
         shape = MaterialTheme.shapes.large,
     ) {
         Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
