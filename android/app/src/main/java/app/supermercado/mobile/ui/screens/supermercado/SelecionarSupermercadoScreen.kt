@@ -21,7 +21,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.MyLocation
@@ -36,7 +35,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -69,8 +67,7 @@ private val ResultShape = RoundedCornerShape(14.dp)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelecionarSupermercadoScreen(
-    onVoltar: () -> Unit,
-    onSelecionado: () -> Unit = onVoltar,
+    onSelecionado: () -> Unit = {},
     viewModel: SelecionarSupermercadoViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -115,14 +112,7 @@ fun SelecionarSupermercadoScreen(
 
     Box(modifier = Modifier.fillMaxSize().background(SupermercadoColorTokens.sidebarBackground)) {
         Column(modifier = Modifier.fillMaxSize()) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                IconButton(onClick = onVoltar) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar", tint = Color.White)
-                }
-            }
+            Spacer(modifier = Modifier.height(24.dp))
             Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp)) {
                 Text(
                     "Onde você vai\nfazer compras hoje?",
