@@ -78,6 +78,12 @@ def init_db(app):
             REFERENCES usuarios(id) ON DELETE CASCADE;
         """)
 
+        # Migração: nome do arquivo de imagem do produto (app/static/images/icons/produtos/)
+        cur.execute("""
+            ALTER TABLE produtos
+            ADD COLUMN IF NOT EXISTS imagem TEXT;
+        """)
+
         # Remove unique constraint antiga (só nome) se ainda existir
         cur.execute("""
             ALTER TABLE produtos

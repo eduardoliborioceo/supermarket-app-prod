@@ -85,6 +85,13 @@
                 {% for p in produtos if p.setor == categoria %}
                 <div class="produto-card" data-id="{{ p.id }}" data-preco="{{ p.preco_carrinho }}">
                     <div class="produto-row">
+                        <div class="produto-thumb">
+                            {% if p.imagem_url %}
+                            <img src="{{ p.imagem_url }}" alt="{{ p.nome }}" loading="lazy">
+                            {% else %}
+                            <i class="fa-solid fa-basket-shopping"></i>
+                            {% endif %}
+                        </div>
                         <div class="produto-info">
                             <div class="nome">{{ p.nome }}</div>
                             <div class="produto-sub">

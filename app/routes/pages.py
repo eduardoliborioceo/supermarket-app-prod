@@ -30,6 +30,7 @@ def produtos():
         produtos = ProdutoRepository.list_all(cur, session["user_id"])
 
     categorias = ProdutoService.montar_categorias(produtos)
+    ProdutoService.anexar_imagens(produtos)
 
     return render_template(
         "produtos.html",

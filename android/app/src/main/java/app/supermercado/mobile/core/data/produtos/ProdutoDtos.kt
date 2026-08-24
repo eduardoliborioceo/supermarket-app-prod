@@ -33,6 +33,7 @@ data class ProdutoAdminDto(
     val nome: String,
     val setor: String,
     @SerialName("ultimo_preco") val ultimoPreco: Double,
+    @SerialName("imagem_url") val imagemUrl: String? = null,
 )
 
 @Serializable

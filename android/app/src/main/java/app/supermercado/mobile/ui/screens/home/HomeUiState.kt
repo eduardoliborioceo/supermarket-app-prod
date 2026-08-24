@@ -6,6 +6,7 @@ data class ProdutoUi(
     val setor: String,
     val qtdCarrinho: Int,
     val precoCarrinho: Double,
+    val imagemUrl: String? = null,
 )
 
 data class CategoriaUi(

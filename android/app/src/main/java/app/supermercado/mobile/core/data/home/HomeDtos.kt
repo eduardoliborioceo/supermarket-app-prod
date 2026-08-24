@@ -18,4 +18,5 @@ data class ProdutoHomeDto(
     val setor: String,
     @SerialName("qtd_carrinho") val qtdCarrinho: Int,
     @SerialName("preco_carrinho") val precoCarrinho: Double,
+    @SerialName("imagem_url") val imagemUrl: String? = null,
 )

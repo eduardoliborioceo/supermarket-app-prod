@@ -5,6 +5,7 @@ data class ProdutoAdminUi(
     val nome: String,
     val setor: String,
     val ultimoPreco: Double,
+    val imagemUrl: String? = null,
 )
 
 data class CategoriaAdminUi(
