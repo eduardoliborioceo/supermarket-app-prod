@@ -18,7 +18,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -68,7 +67,7 @@ private val CardRadius = RoundedCornerShape(16.dp)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProdutosScreen(onVoltar: () -> Unit, viewModel: ProdutosViewModel = hiltViewModel()) {
+fun ProdutosScreen(viewModel: ProdutosViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var mensagem by remember { mutableStateOf<String?>(null) }
     var confirmarExclusaoId by remember { mutableStateOf<Int?>(null) }
@@ -88,11 +87,6 @@ fun ProdutosScreen(onVoltar: () -> Unit, viewModel: ProdutosViewModel = hiltView
             TopAppBar(
                 title = { Text("Produtos (${state.totalProdutos})", fontWeight = FontWeight.Bold) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = SupermercadoColorTokens.surface),
-                navigationIcon = {
-                    IconButton(onClick = onVoltar) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
-                    }
-                },
                 actions = {
                     IconButton(onClick = { confirmarRestaurarAberto = true }, enabled = !state.restaurandoPadrao) {
                         Icon(Icons.Filled.Refresh, contentDescription = "Restaurar padrão", tint = SupermercadoColorTokens.primary)

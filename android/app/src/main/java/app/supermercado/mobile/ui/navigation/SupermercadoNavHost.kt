@@ -7,24 +7,18 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import app.supermercado.mobile.ui.screens.auth.LoginScreen
 import app.supermercado.mobile.ui.screens.autologin.AutoLoginScreen
-import app.supermercado.mobile.ui.screens.home.HomeScreen
-import app.supermercado.mobile.ui.screens.produtos.ProdutosScreen
-import app.supermercado.mobile.ui.screens.supermercado.SelecionarSupermercadoScreen
 
 /**
- * Grafo da Fase 2/3 do plano de migracao (docs/mobile-nativo): AutoLogin
- * decide entre Home (refresh token salvo, renovado em silencio) e Login
- * (Google OAuth). Paridade de feature com o web (Fase 3) completa com
- * Produtos e Selecionar Supermercado — navegacao ad-hoc (botoes no TopAppBar
- * da Home) ate essas telas, sem menu inferior por enquanto (poucas abas pra
- * justificar uma bottom nav ainda).
+ * Grafo raiz do app: AutoLogin decide entre Main (refresh token salvo,
+ * renovado em silencio) e Login (Google OAuth). Fase 4 do plano de migracao
+ * (docs/mobile-nativo) troca a navegacao ad-hoc entre Home/Produtos/
+ * Supermercado por abas fixas dentro de MainScreen (bottom nav, paridade
+ * com base.html), incluindo a nova aba "Mais" com o logout.
  */
 object SupermercadoDestinations {
     const val AUTO_LOGIN = "auto_login"
     const val LOGIN = "login"
-    const val HOME = "home"
-    const val PRODUTOS = "produtos"
-    const val SUPERMERCADO = "supermercado"
+    const val MAIN = "main"
 }
 
 @Composable
@@ -33,7 +27,7 @@ fun SupermercadoNavHost(navController: NavHostController = rememberNavController
         composable(SupermercadoDestinations.AUTO_LOGIN) {
             AutoLoginScreen(
                 onNavigateToHome = {
-                    navController.navigate(SupermercadoDestinations.HOME) {
+                    navController.navigate(SupermercadoDestinations.MAIN) {
                         popUpTo(SupermercadoDestinations.AUTO_LOGIN) { inclusive = true }
                     }
                 },
@@ -47,23 +41,20 @@ fun SupermercadoNavHost(navController: NavHostController = rememberNavController
         composable(SupermercadoDestinations.LOGIN) {
             LoginScreen(
                 onLoginSuccess = {
-                    navController.navigate(SupermercadoDestinations.HOME) {
+                    navController.navigate(SupermercadoDestinations.MAIN) {
                         popUpTo(SupermercadoDestinations.LOGIN) { inclusive = true }
                     }
                 },
             )
         }
-        composable(SupermercadoDestinations.HOME) {
-            HomeScreen(
-                onAbrirProdutos = { navController.navigate(SupermercadoDestinations.PRODUTOS) },
-                onAbrirSupermercado = { navController.navigate(SupermercadoDestinations.SUPERMERCADO) },
+        composable(SupermercadoDestinations.MAIN) {
+            MainScreen(
+                onLogout = {
+                    navController.navigate(SupermercadoDestinations.LOGIN) {
+                        popUpTo(SupermercadoDestinations.MAIN) { inclusive = true }
+                    }
+                },
             )
-        }
-        composable(SupermercadoDestinations.PRODUTOS) {
-            ProdutosScreen(onVoltar = { navController.popBackStack() })
-        }
-        composable(SupermercadoDestinations.SUPERMERCADO) {
-            SelecionarSupermercadoScreen(onVoltar = { navController.popBackStack() })
         }
     }
 }

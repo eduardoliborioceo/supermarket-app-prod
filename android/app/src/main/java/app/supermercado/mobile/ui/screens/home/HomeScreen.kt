@@ -19,10 +19,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Store
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -67,8 +65,6 @@ private val CardRadius = RoundedCornerShape(16.dp)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onAbrirProdutos: () -> Unit = {},
-    onAbrirSupermercado: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -84,12 +80,6 @@ fun HomeScreen(
                 title = { Text("Lista de Compras", fontWeight = FontWeight.Bold) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = SupermercadoColorTokens.surface),
                 actions = {
-                    IconButton(onClick = onAbrirSupermercado) {
-                        Icon(Icons.Filled.Store, contentDescription = "Selecionar supermercado", tint = SupermercadoColorTokens.onSurfaceMuted)
-                    }
-                    IconButton(onClick = onAbrirProdutos) {
-                        Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Produtos", tint = SupermercadoColorTokens.onSurfaceMuted)
-                    }
                     IconButton(onClick = { confirmarLimparAberto = true }) {
                         Icon(Icons.Filled.Delete, contentDescription = "Limpar carrinho", tint = SupermercadoColorTokens.error)
                     }
