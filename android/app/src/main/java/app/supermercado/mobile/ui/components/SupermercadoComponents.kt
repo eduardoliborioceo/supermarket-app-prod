@@ -18,6 +18,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,10 +27,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import android.util.Log
 import app.supermercado.mobile.core.util.urlImagemProduto
 import app.supermercado.mobile.ui.theme.PillShape
 import app.supermercado.mobile.ui.theme.SupermercadoColorTokens
-import coil3.compose.AsyncImage
+import coil3.compose.AsyncImagePainter
+import coil3.compose.SubcomposeAsyncImage
 
 /** Badge em formato de pílula — porta `.category-badge`/`.category-total`/`.result-badge` do CSS. */
 @Composable
@@ -103,11 +106,34 @@ fun ProdutoThumbnail(
         border = BorderStroke(1.dp, SupermercadoColorTokens.border),
     ) {
         if (urlCompleta != null) {
-            AsyncImage(
+            SubcomposeAsyncImage(
                 model = urlCompleta,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.size(tamanho),
+                loading = {
+                    Box(modifier = Modifier.size(tamanho), contentAlignment = Alignment.Center) {
+                        Icon(
+                            Icons.Filled.ShoppingBasket,
+                            contentDescription = null,
+                            tint = SupermercadoColorTokens.onSurfaceMuted.copy(alpha = 0.4f),
+                            modifier = Modifier.size(tamanho * 0.45f),
+                        )
+                    }
+                },
+                error = { estado ->
+                    LaunchedEffect(urlCompleta) {
+                        Log.e("ProdutoThumbnail", "falha ao carregar $urlCompleta", (estado as? AsyncImagePainter.State.Error)?.result?.throwable)
+                    }
+                    Box(modifier = Modifier.size(tamanho), contentAlignment = Alignment.Center) {
+                        Icon(
+                            Icons.Filled.ShoppingBasket,
+                            contentDescription = null,
+                            tint = SupermercadoColorTokens.error,
+                            modifier = Modifier.size(tamanho * 0.45f),
+                        )
+                    }
+                },
             )
         } else {
             Box(modifier = Modifier.size(tamanho), contentAlignment = Alignment.Center) {
