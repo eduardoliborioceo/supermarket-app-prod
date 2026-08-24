@@ -213,7 +213,7 @@ private fun ErroCarregarHome(mensagem: String, onTentarNovamente: () -> Unit) {
  * alto dos dois), pra eles nunca ficarem com tamanhos diferentes entre si. O
  * card de Saldo disponível fica de fora: só tem texto, então usa altura
  * própria (wrap content) em vez de herdar essa altura maior à toa. */
-private val KpiCardHeight = 104.dp
+private val KpiCardHeight = 92.dp
 
 @Composable
 private fun KpiRow(
@@ -293,7 +293,7 @@ private fun KpiCard(
         shape = CardRadius,
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(14.dp),
+            modifier = Modifier.fillMaxSize().padding(horizontal = 14.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(titulo, style = MaterialTheme.typography.labelMedium, color = SupermercadoColorTokens.onSurfaceMuted)
