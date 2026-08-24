@@ -4,6 +4,8 @@ from datetime import datetime, timedelta, timezone
 
 import jwt
 from flask import current_app
+from google.auth.transport import requests as google_requests
+from google.oauth2 import id_token as google_id_token
 
 from app.repositories.token_repository import TokenRepository
 
@@ -63,6 +65,21 @@ class AuthTokenService:
     @staticmethod
     def revogar_refresh_token(cur, refresh_token):
         TokenRepository.revoke_refresh_token(cur, AuthTokenService._hash(refresh_token))
+
+    @staticmethod
+    def verificar_id_token_google(id_token_str):
+        """Valida um ID token do Credential Manager (login nativo Android) —
+        confere assinatura, expiração e que o audience bate com o client OAuth
+        Web (GOOGLE_CLIENT_ID), o mesmo que o fluxo Authlib/browser já usa.
+        Retorna as claims (sub/email/name/picture) ou None se inválido."""
+        try:
+            return google_id_token.verify_oauth2_token(
+                id_token_str,
+                google_requests.Request(),
+                current_app.config["GOOGLE_CLIENT_ID"],
+            )
+        except ValueError:
+            return None
 
     @staticmethod
     def gerar_codigo_troca(cur, usuario_id):

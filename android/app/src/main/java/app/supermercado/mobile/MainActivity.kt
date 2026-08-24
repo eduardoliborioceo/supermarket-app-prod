@@ -1,18 +1,14 @@
 package app.supermercado.mobile
 
-import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
-import app.supermercado.mobile.core.data.auth.OAuthCallbackBus
-import app.supermercado.mobile.core.data.auth.OAuthCallbackEvent
 import app.supermercado.mobile.ui.navigation.SupermercadoNavHost
 import app.supermercado.mobile.ui.theme.SupermercadoTheme
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -21,11 +17,9 @@ import kotlinx.coroutines.launch
  * is readable even on fast devices. */
 private const val SPLASH_MIN_DISPLAY_DURATION_MS = 1600L
 
+/** FragmentActivity (não ComponentActivity) porque BiometricPrompt exige esse host. */
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
-
-    @Inject
-    lateinit var oAuthCallbackBus: OAuthCallbackBus
+class MainActivity : FragmentActivity() {
 
     private var isSplashMinDurationElapsed = false
 
@@ -34,8 +28,6 @@ class MainActivity : ComponentActivity() {
         splashScreen.setKeepOnScreenCondition { !isSplashMinDurationElapsed }
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
-        handleOAuthCallback(intent)
 
         lifecycleScope.launch {
             delay(SPLASH_MIN_DISPLAY_DURATION_MS)
@@ -46,23 +38,6 @@ class MainActivity : ComponentActivity() {
             SupermercadoTheme {
                 SupermercadoNavHost()
             }
-        }
-    }
-
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        handleOAuthCallback(intent)
-    }
-
-    private fun handleOAuthCallback(intent: Intent?) {
-        val data = intent?.data ?: return
-        if (data.scheme != "app.supermercado.mobile" || data.host != "oauth-callback") return
-
-        val code = data.getQueryParameter("code")
-        val error = data.getQueryParameter("error")
-        when {
-            code != null -> oAuthCallbackBus.emit(OAuthCallbackEvent.Success(code))
-            error != null -> oAuthCallbackBus.emit(OAuthCallbackEvent.Error(error))
         }
     }
 }

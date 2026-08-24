@@ -14,8 +14,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.fragment.app.FragmentActivity
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.supermercado.mobile.R
@@ -28,9 +30,11 @@ fun AutoLoginScreen(
     viewModel: AutoLoginViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val activity = LocalContext.current as FragmentActivity
 
     LaunchedEffect(state) {
         when (state) {
+            is AutoLoginState.PedirBiometria -> viewModel.autenticarComBiometria(activity)
             is AutoLoginState.Sucesso -> onNavigateToHome()
             is AutoLoginState.IrParaLogin -> onNavigateToLogin()
             is AutoLoginState.Verificando -> Unit

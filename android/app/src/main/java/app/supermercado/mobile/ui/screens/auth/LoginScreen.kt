@@ -1,6 +1,5 @@
 package app.supermercado.mobile.ui.screens.auth
 
-import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -17,25 +16,29 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
+import androidx.fragment.app.FragmentActivity
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.supermercado.mobile.R
@@ -43,9 +46,11 @@ import app.supermercado.mobile.ui.theme.SupermercadoColorTokens
 
 /**
  * Único provedor de login é o Google (ver CLAUDE.md > Auth — não existe login
- * por senha neste projeto). O botão abre uma Custom Tab pro fluxo OAuth do
- * Flask; o retorno chega via deep link capturado pela MainActivity e
- * processado pelo LoginViewModel (ver docs/mobile-nativo, Fase 2).
+ * por senha neste projeto). O botão abre o modal nativo do Credential Manager
+ * (folha de contas do sistema, sem navegador) — mesmo padrão usado pelos apps
+ * famosos. Quando existe sessão salva e o aparelho suporta biometria, um
+ * atalho de digital/rosto aparece acima: ele só destrava essa sessão, nunca
+ * substitui o login com Google em si.
  */
 @Composable
 fun LoginScreen(
@@ -54,6 +59,7 @@ fun LoginScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val mostrarBotaoBiometria = viewModel.temSessaoSalva && viewModel.biometriaDisponivel(context)
 
     LaunchedEffect(state) {
         if (state is LoginState.Sucesso) onLoginSuccess()
@@ -98,24 +104,48 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                when (val current = state) {
-                    is LoginState.Carregando -> CircularProgressIndicator(color = SupermercadoColorTokens.primary)
-                    is LoginState.Erro -> {
-                        Text(
-                            text = current.mensagem,
-                            color = SupermercadoColorTokens.error,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(bottom = 16.dp),
-                        )
-                        BotaoEntrarComGoogle(onClick = {
-                            viewModel.iniciarLogin()
-                            abrirCustomTab(context, viewModel.urlLoginGoogle)
-                        })
+                val isLoading = state is LoginState.Carregando
+
+                if (mostrarBotaoBiometria) {
+                    OutlinedButton(
+                        onClick = { viewModel.entrarComBiometria(context as FragmentActivity) },
+                        enabled = !isLoading,
+                        shape = RoundedCornerShape(14.dp),
+                        contentPadding = PaddingValues(vertical = 13.dp, horizontal = 20.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Icon(Icons.Filled.Fingerprint, contentDescription = null, modifier = Modifier.size(20.dp))
+                        Text("Entrar com biometria", fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(start = 8.dp))
                     }
-                    else -> BotaoEntrarComGoogle(onClick = {
-                        viewModel.iniciarLogin()
-                        abrirCustomTab(context, viewModel.urlLoginGoogle)
-                    })
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                    ) {
+                        HorizontalDivider(modifier = Modifier.weight(1f), color = SupermercadoColorTokens.border)
+                        Text(
+                            "ou entre com o Google",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = SupermercadoColorTokens.onSurfaceMuted,
+                            modifier = Modifier.padding(horizontal = 12.dp),
+                        )
+                        HorizontalDivider(modifier = Modifier.weight(1f), color = SupermercadoColorTokens.border)
+                    }
+                }
+
+                if (state is LoginState.Erro) {
+                    Text(
+                        text = (state as LoginState.Erro).mensagem,
+                        color = SupermercadoColorTokens.error,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(bottom = 16.dp),
+                    )
+                }
+
+                if (isLoading) {
+                    CircularProgressIndicator(color = SupermercadoColorTokens.primary)
+                } else {
+                    BotaoEntrarComGoogle(onClick = { viewModel.loginComGoogle(context) })
                 }
             }
         }
@@ -146,24 +176,4 @@ private fun BotaoEntrarComGoogle(onClick: () -> Unit) {
             Text("Entrar com Google", fontWeight = FontWeight.SemiBold)
         }
     }
-}
-
-private fun abrirCustomTab(context: android.content.Context, url: String) {
-    val customTabsIntent = CustomTabsIntent.Builder()
-        .setDefaultColorSchemeParams(
-            androidx.browser.customtabs.CustomTabColorSchemeParams.Builder()
-                .setToolbarColor(SupermercadoColorTokens.sidebarBackground.toArgb())
-                .build(),
-        )
-        .build()
-
-    // Sem isso, o Android pode roteirar a URL pra um WebAPK do PWA instalado
-    // no aparelho (mesma origem) em vez de abrir como Custom Tab de verdade
-    // vinculada a este app — força a resolução direta pelo navegador padrão.
-    val navegador = androidx.browser.customtabs.CustomTabsClient.getPackageName(context, null)
-    if (navegador != null) {
-        customTabsIntent.intent.setPackage(navegador)
-    }
-
-    customTabsIntent.launchUrl(context, url.toUri())
 }

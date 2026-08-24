@@ -1,6 +1,5 @@
 package app.supermercado.mobile.core.data.auth
 
-import app.supermercado.mobile.BuildConfig
 import app.supermercado.mobile.core.data.session.SessionManager
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -13,12 +12,8 @@ class AuthRepository @Inject constructor(
     val estaLogado: Boolean
         get() = sessionManager.estaLogado
 
-    /** URL aberta na Custom Tab — `client=android` sinaliza o backend a
-     * devolver um deep link com código de troca em vez do redirect web. */
-    fun urlLoginGoogle(): String = "${BuildConfig.API_BASE_URL}auth/google?client=android"
-
-    suspend fun trocarCodigo(code: String) {
-        val tokens = authApi.trocarCodigo(TrocarCodigoRequestDto(code))
+    suspend fun loginComGoogleIdToken(idToken: String) {
+        val tokens = authApi.loginComGoogleIdToken(GoogleIdTokenRequestDto(idToken))
         sessionManager.salvarTokens(tokens)
     }
 
