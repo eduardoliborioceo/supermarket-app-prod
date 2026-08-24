@@ -161,6 +161,7 @@ def home_dados():
                 "setor": p["setor"],
                 "qtd_carrinho": p["qtd_carrinho"],
                 "preco_carrinho": p["preco_carrinho"],
+                "imagem_url": p["imagem_url"],
             }
             for p in dados["produtos"]
         ],
@@ -172,11 +173,18 @@ def home_dados():
 def listar_produtos():
     with db_cursor() as cur:
         produtos = ProdutoRepository.list_all(cur, session["user_id"])
+    ProdutoService.anexar_imagens(produtos)
     return jsonify({
         "status": "ok",
         "categorias": ProdutoService.montar_categorias(produtos),
         "produtos": [
-            {"id": p["id"], "nome": p["nome"], "setor": p["setor"], "ultimo_preco": float(p["ultimo_preco"])}
+            {
+                "id": p["id"],
+                "nome": p["nome"],
+                "setor": p["setor"],
+                "ultimo_preco": float(p["ultimo_preco"]),
+                "imagem_url": p["imagem_url"],
+            }
             for p in produtos
         ],
     })

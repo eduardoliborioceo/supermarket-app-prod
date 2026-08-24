@@ -1,5 +1,7 @@
 import re
 
+from flask import url_for
+
 from app.repositories.compra_repository import CompraRepository
 from app.repositories.produto_repository import ProdutoRepository
 from app.repositories.usuario_repository import UsuarioRepository
@@ -11,6 +13,8 @@ CATEGORIAS_PADRAO = [
     "Higiene e Limpeza",
     "Bebidas",
 ]
+
+IMAGEM_PASTA = "images/icons/produtos"
 
 
 class ProdutoService:
@@ -48,6 +52,18 @@ class ProdutoService:
         return CATEGORIAS_PADRAO + extra
 
     @staticmethod
+    def montar_imagem_url(imagem: str) -> str:
+        if not imagem:
+            return None
+        return url_for("static", filename=f"{IMAGEM_PASTA}/{imagem}")
+
+    @staticmethod
+    def anexar_imagens(produtos: list) -> list:
+        for p in produtos:
+            p["imagem_url"] = ProdutoService.montar_imagem_url(p.get("imagem"))
+        return produtos
+
+    @staticmethod
     def montar_home(cur, usuario_id: int) -> dict:
         """Produtos + carrinho combinados, mesma composição usada pelo
         home.html (web) e pelo endpoint JSON /api/home (app nativo) — a
@@ -61,6 +77,7 @@ class ProdutoService:
             item = carrinho_map.get(p["id"])
             p["qtd_carrinho"] = int(item["quantidade"]) if item else 0
             p["preco_carrinho"] = float(item["preco"]) if item else float(p["ultimo_preco"])
+        ProdutoService.anexar_imagens(produtos)
 
         return {
             "produtos": produtos,

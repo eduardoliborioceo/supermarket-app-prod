@@ -61,6 +61,7 @@ import app.supermercado.mobile.core.data.produtos.ResultadoOperacao
 import app.supermercado.mobile.core.util.formatarMoeda
 import app.supermercado.mobile.core.util.parseMoeda
 import app.supermercado.mobile.ui.components.PillBadge
+import app.supermercado.mobile.ui.components.ProdutoThumbnail
 import app.supermercado.mobile.ui.theme.SupermercadoColorTokens
 import kotlinx.coroutines.delay
 
@@ -286,8 +287,11 @@ private fun ProdutoAdminCard(
         shape = MaterialTheme.shapes.large,
     ) {
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                PillBadge(texto = "#${produto.id}")
+            Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ProdutoThumbnail(imagemUrl = produto.imagemUrl, tamanho = 32.dp)
+                    PillBadge(texto = "#${produto.id}")
+                }
                 Text(
                     if (produto.ultimoPreco > 0) formatarMoeda(produto.ultimoPreco) else "sem preço",
                     style = MaterialTheme.typography.labelMedium,

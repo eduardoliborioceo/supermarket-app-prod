@@ -52,7 +52,16 @@
                 <div class="admin-card" data-id="{{ p.id }}">
 
                     <div class="admin-card-head">
-                        <span class="admin-pill">#{{ p.id }}</span>
+                        <div class="admin-head-left">
+                            <div class="produto-thumb produto-thumb-sm">
+                                {% if p.imagem_url %}
+                                <img src="{{ p.imagem_url }}" alt="{{ p.nome }}" loading="lazy">
+                                {% else %}
+                                <i class="fa-solid fa-basket-shopping"></i>
+                                {% endif %}
+                            </div>
+                            <span class="admin-pill">#{{ p.id }}</span>
+                        </div>
                         <span class="admin-muted">
                             {% if p.ultimo_preco > 0 %}
                                 R$ {{ "%.2f"|format(p.ultimo_preco) }}

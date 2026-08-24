@@ -553,6 +553,34 @@ a { color: inherit; }
     align-items: flex-start;
 }
 
+.produto-thumb {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: rgba(15, 23, 42, 0.03);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    color: var(--muted);
+    font-size: 16px;
+}
+
+.produto-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.produto-thumb-sm {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    font-size: 13px;
+}
+
 .produto-info .nome {
     font-weight: 800;
     letter-spacing: -0.2px;
@@ -684,6 +712,12 @@ a { color: inherit; }
     gap: 10px;
     flex-wrap: wrap;
     margin-bottom: 10px;
+}
+
+.admin-head-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .admin-pill {

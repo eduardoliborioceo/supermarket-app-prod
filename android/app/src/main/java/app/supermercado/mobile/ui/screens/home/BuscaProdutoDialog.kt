@@ -45,6 +45,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.supermercado.mobile.core.data.produtos.ProdutoAdminDto
 import app.supermercado.mobile.core.util.formatarMoeda
+import app.supermercado.mobile.ui.components.ProdutoThumbnail
 import app.supermercado.mobile.ui.theme.SupermercadoColorTokens
 
 /**
@@ -142,9 +143,12 @@ private fun ResultadoBuscaItem(produto: ProdutoAdminDto, onClick: () -> Unit) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(produto.nome, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
-                Text(produto.setor, style = MaterialTheme.typography.labelMedium, color = SupermercadoColorTokens.onSurfaceMuted)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.weight(1f)) {
+                ProdutoThumbnail(imagemUrl = produto.imagemUrl)
+                Column {
+                    Text(produto.nome, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+                    Text(produto.setor, style = MaterialTheme.typography.labelMedium, color = SupermercadoColorTokens.onSurfaceMuted)
+                }
             }
             Text(
                 formatarMoeda(produto.ultimoPreco),

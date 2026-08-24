@@ -65,6 +65,7 @@ import app.supermercado.mobile.core.data.produtos.ResultadoAdicionarProduto
 import app.supermercado.mobile.core.util.formatarMoeda
 import app.supermercado.mobile.core.util.parseMoeda
 import app.supermercado.mobile.ui.components.PillBadge
+import app.supermercado.mobile.ui.components.ProdutoThumbnail
 import app.supermercado.mobile.ui.components.QtyStepper
 import app.supermercado.mobile.ui.theme.PillShape
 import app.supermercado.mobile.ui.theme.SupermercadoColorTokens
@@ -523,14 +524,16 @@ private fun ProdutoCard(
         shape = MaterialTheme.shapes.large,
     ) {
         Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(
-                    produto.nome,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = corCategoria,
-                    modifier = Modifier.weight(1f),
-                )
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.weight(1f)) {
+                    ProdutoThumbnail(imagemUrl = produto.imagemUrl)
+                    Text(
+                        produto.nome,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = corCategoria,
+                    )
+                }
                 Text(
                     formatarMoeda(produto.precoCarrinho * produto.qtdCarrinho),
                     style = MaterialTheme.typography.bodyLarge,

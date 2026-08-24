@@ -2,7 +2,7 @@ class ProdutoRepository:
     @staticmethod
     def list_all(cur, usuario_id):
         cur.execute("""
-            SELECT id, nome, setor, ultimo_preco
+            SELECT id, nome, setor, ultimo_preco, imagem
             FROM produtos
             WHERE usuario_id = %s
             ORDER BY setor, nome

@@ -43,7 +43,7 @@ class ProdutosViewModel @Inject constructor(
             val expandidoAntes = _state.value.categorias.find { it.nome == categoria }?.expandido ?: false
             CategoriaAdminUi(
                 nome = categoria,
-                produtos = (porSetor[categoria] ?: emptyList()).map { ProdutoAdminUi(it.id, it.nome, it.setor, it.ultimoPreco) },
+                produtos = (porSetor[categoria] ?: emptyList()).map { ProdutoAdminUi(it.id, it.nome, it.setor, it.ultimoPreco, it.imagemUrl) },
                 expandido = expandidoAntes,
             )
         }

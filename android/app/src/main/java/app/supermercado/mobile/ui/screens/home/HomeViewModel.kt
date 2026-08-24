@@ -68,7 +68,7 @@ class HomeViewModel @Inject constructor(
             CategoriaUi(
                 nome = categoria,
                 produtos = (porSetor[categoria] ?: emptyList()).map {
-                    ProdutoUi(it.id, it.nome, it.setor, it.qtdCarrinho, it.precoCarrinho)
+                    ProdutoUi(it.id, it.nome, it.setor, it.qtdCarrinho, it.precoCarrinho, it.imagemUrl)
                 },
             )
         }
