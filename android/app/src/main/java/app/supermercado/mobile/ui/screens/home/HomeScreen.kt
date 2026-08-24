@@ -102,40 +102,48 @@ fun HomeScreen(
             }
         },
     ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize().background(SupermercadoColorTokens.background).padding(innerPadding)) {
+        Column(modifier = Modifier.fillMaxSize().background(SupermercadoColorTokens.background).padding(innerPadding)) {
             when {
-                state.carregando -> CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                    color = SupermercadoColorTokens.primary,
-                )
+                state.carregando -> Box(modifier = Modifier.fillMaxSize()) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center),
+                        color = SupermercadoColorTokens.primary,
+                    )
+                }
                 state.erro != null -> ErroCarregarHome(mensagem = state.erro!!, onTentarNovamente = viewModel::carregar)
-                else -> LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(14.dp),
-                ) {
-                    item {
+                else -> {
+                    Surface(
+                        color = SupermercadoColorTokens.background,
+                        shadowElevation = 3.dp,
+                    ) {
                         KpiRow(
                             totalAtual = state.totalAtual,
                             gastoPrevisto = state.gastoPrevisto,
                             saldoDisponivel = state.saldoDisponivel,
                             onGastoPrevistoChange = viewModel::alterarGastoPrevisto,
+                            modifier = Modifier.padding(16.dp),
                         )
                     }
-                    itemsIndexed(state.categorias, key = { _, categoria -> categoria.nome }) { index, categoria ->
-                        CategoriaSection(
-                            categoria = categoria,
-                            corCategoria = SupermercadoColorTokens.categoryColor(index),
-                            fundoCategoria = SupermercadoColorTokens.categoryTint(index),
-                            onQtdChange = viewModel::alterarQuantidade,
-                            onPrecoChange = viewModel::alterarPreco,
-                            onAdicionarClick = {
-                                categoriaParaNovoProduto = categoria.nome
-                                dialogAdicionarAberto = true
-                            },
-                        )
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(14.dp),
+                    ) {
+                        itemsIndexed(state.categorias, key = { _, categoria -> categoria.nome }) { index, categoria ->
+                            CategoriaSection(
+                                categoria = categoria,
+                                corCategoria = SupermercadoColorTokens.categoryColor(index),
+                                fundoCategoria = SupermercadoColorTokens.categoryTint(index),
+                                onQtdChange = viewModel::alterarQuantidade,
+                                onPrecoChange = viewModel::alterarPreco,
+                                onAdicionarClick = {
+                                    categoriaParaNovoProduto = categoria.nome
+                                    dialogAdicionarAberto = true
+                                },
+                            )
+                        }
+                        item { Spacer(modifier = Modifier.height(72.dp)) }
                     }
-                    item { Spacer(modifier = Modifier.height(72.dp)) }
                 }
             }
         }
@@ -200,18 +208,24 @@ private fun ErroCarregarHome(mensagem: String, onTentarNovamente: () -> Unit) {
     }
 }
 
+/** Altura compartilhada pelos 3 cards (Total atual / Gasto previsto / Saldo
+ * disponível) — precisa caber o OutlinedTextField do Gasto previsto (o mais
+ * alto dos três), pra os cards nunca ficarem com tamanhos diferentes entre si. */
+private val KpiCardHeight = 104.dp
+
 @Composable
 private fun KpiRow(
     totalAtual: Double,
     gastoPrevisto: Double,
     saldoDisponivel: Double,
     onGastoPrevistoChange: (Double) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     var textoGasto by rememberSaveable(gastoPrevisto) {
         mutableStateOf(if (gastoPrevisto == 0.0) "" else formatarMoeda(gastoPrevisto).removePrefix("R$ "))
     }
 
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             KpiCard(titulo = "Total atual", valor = formatarMoeda(totalAtual), modifier = Modifier.weight(1f))
             KpiCard(
@@ -225,6 +239,7 @@ private fun KpiRow(
                             onGastoPrevistoChange(parseMoeda(it))
                         },
                         placeholder = { Text("0,00") },
+                        prefix = { Text("R$") },
                         singleLine = true,
                         shape = MaterialTheme.shapes.medium,
                         modifier = Modifier.fillMaxWidth(),
@@ -236,6 +251,7 @@ private fun KpiRow(
         val saldoNegativo = saldoDisponivel < 0
         val corSaldo = if (saldoNegativo) SupermercadoColorTokens.error else SupermercadoColorTokens.success
         Card(
+            modifier = Modifier.fillMaxWidth().height(KpiCardHeight),
             shape = CardRadius,
             colors = CardDefaults.cardColors(containerColor = SupermercadoColorTokens.surface),
             border = BorderStroke(1.dp, corSaldo.copy(alpha = 0.25f)),
@@ -243,8 +259,10 @@ private fun KpiRow(
         ) {
             Column(
                 modifier = Modifier
+                    .fillMaxSize()
                     .background(Brush.verticalGradient(listOf(corSaldo.copy(alpha = 0.10f), Color.Transparent)))
-                    .padding(16.dp),
+                    .padding(14.dp),
+                verticalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text("Saldo disponível", style = MaterialTheme.typography.labelMedium, color = SupermercadoColorTokens.onSurfaceMuted)
                 Text(
@@ -266,15 +284,17 @@ private fun KpiCard(
     conteudo: (@Composable () -> Unit)? = null,
 ) {
     Card(
-        modifier = modifier,
+        modifier = modifier.height(KpiCardHeight),
         colors = CardDefaults.cardColors(containerColor = SupermercadoColorTokens.surface),
         border = BorderStroke(1.dp, SupermercadoColorTokens.border),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = CardRadius,
     ) {
-        Column(modifier = Modifier.padding(14.dp)) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(14.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
+        ) {
             Text(titulo, style = MaterialTheme.typography.labelMedium, color = SupermercadoColorTokens.onSurfaceMuted)
-            Spacer(modifier = Modifier.height(4.dp))
             if (valor != null) {
                 Text(valor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             }
