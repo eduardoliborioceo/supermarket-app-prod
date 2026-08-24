@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -83,10 +84,12 @@ fun ProdutosScreen(viewModel: ProdutosViewModel = hiltViewModel()) {
 
     Scaffold(
         containerColor = SupermercadoColorTokens.background,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
                 title = { Text("Produtos (${state.totalProdutos})", fontWeight = FontWeight.Bold) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = SupermercadoColorTokens.surface),
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 actions = {
                     IconButton(onClick = { confirmarRestaurarAberto = true }, enabled = !state.restaurandoPadrao) {
                         Icon(Icons.Filled.Refresh, contentDescription = "Restaurar padrão", tint = SupermercadoColorTokens.primary)
