@@ -322,12 +322,12 @@ private fun CategoriaSection(
             Box(modifier = Modifier.fillMaxWidth().height(3.dp).background(corCategoria))
 
             Row(
-                modifier = Modifier.fillMaxWidth().background(fundoCategoria).padding(14.dp),
+                modifier = Modifier.fillMaxWidth().background(fundoCategoria).padding(horizontal = 14.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text(categoria.nome, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = corCategoria)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(categoria.nome, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = corCategoria)
                     PillBadge(
                         texto = "${categoria.produtos.size} · ${formatarMoeda(categoria.total)}",
                         contentColor = corCategoria,
@@ -345,7 +345,7 @@ private fun CategoriaSection(
                         Icons.Filled.Add,
                         contentDescription = "Adicionar item em ${categoria.nome}",
                         tint = corCategoria,
-                        modifier = Modifier.padding(8.dp).size(20.dp),
+                        modifier = Modifier.padding(6.dp).size(18.dp),
                     )
                 }
             }
@@ -358,7 +358,7 @@ private fun CategoriaSection(
                     modifier = Modifier.padding(14.dp),
                 )
             } else {
-                Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     categoria.produtos.forEach { produto ->
                         ProdutoCard(
                             produto = produto,
@@ -388,55 +388,58 @@ private fun ProdutoCard(
         border = BorderStroke(1.dp, SupermercadoColorTokens.border),
         shape = MaterialTheme.shapes.large,
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
+        Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(produto.nome, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold, color = corCategoria)
-
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    if (editandoPreco) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            OutlinedTextField(
-                                value = textoPreco,
-                                onValueChange = { textoPreco = it },
-                                singleLine = true,
-                                shape = MaterialTheme.shapes.medium,
-                                modifier = Modifier.width(120.dp),
-                            )
-                            TextButton(onClick = {
-                                editandoPreco = false
-                                onPrecoChange(parseMoeda(textoPreco))
-                            }) { Text("OK") }
-                        }
-                    } else {
-                        Surface(
-                            onClick = { editandoPreco = true },
-                            shape = PillShape,
-                            color = SupermercadoColorTokens.primary.copy(alpha = 0.08f),
-                            border = BorderStroke(1.dp, SupermercadoColorTokens.primary.copy(alpha = 0.18f)),
-                        ) {
-                            Text(
-                                formatarMoeda(produto.precoCarrinho),
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = SupermercadoColorTokens.primary,
-                            )
-                        }
-                    }
-                }
+                Text(
+                    produto.nome,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = corCategoria,
+                    modifier = Modifier.weight(1f),
+                )
                 Text(
                     formatarMoeda(produto.precoCarrinho * produto.qtdCarrinho),
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
                 )
             }
 
             Row(
-                modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
-                horizontalArrangement = Arrangement.End,
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
+                if (editandoPreco) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        OutlinedTextField(
+                            value = textoPreco,
+                            onValueChange = { textoPreco = it },
+                            singleLine = true,
+                            shape = MaterialTheme.shapes.medium,
+                            modifier = Modifier.width(110.dp),
+                        )
+                        TextButton(onClick = {
+                            editandoPreco = false
+                            onPrecoChange(parseMoeda(textoPreco))
+                        }) { Text("OK") }
+                    }
+                } else {
+                    Surface(
+                        onClick = { editandoPreco = true },
+                        shape = PillShape,
+                        color = SupermercadoColorTokens.primary.copy(alpha = 0.08f),
+                        border = BorderStroke(1.dp, SupermercadoColorTokens.primary.copy(alpha = 0.18f)),
+                    ) {
+                        Text(
+                            formatarMoeda(produto.precoCarrinho),
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = SupermercadoColorTokens.primary,
+                        )
+                    }
+                }
+
                 QtyStepper(
                     qtd = produto.qtdCarrinho,
                     onDecrement = { onQtdChange(-1) },
