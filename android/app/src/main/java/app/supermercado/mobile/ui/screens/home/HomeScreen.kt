@@ -208,9 +208,11 @@ private fun ErroCarregarHome(mensagem: String, onTentarNovamente: () -> Unit) {
     }
 }
 
-/** Altura compartilhada pelos 3 cards (Total atual / Gasto previsto / Saldo
- * disponível) — precisa caber o OutlinedTextField do Gasto previsto (o mais
- * alto dos três), pra os cards nunca ficarem com tamanhos diferentes entre si. */
+/** Altura compartilhada só pelos 2 cards de cima (Total atual / Gasto
+ * previsto) — precisa caber o OutlinedTextField do Gasto previsto (o mais
+ * alto dos dois), pra eles nunca ficarem com tamanhos diferentes entre si. O
+ * card de Saldo disponível fica de fora: só tem texto, então usa altura
+ * própria (wrap content) em vez de herdar essa altura maior à toa. */
 private val KpiCardHeight = 104.dp
 
 @Composable
@@ -251,7 +253,7 @@ private fun KpiRow(
         val saldoNegativo = saldoDisponivel < 0
         val corSaldo = if (saldoNegativo) SupermercadoColorTokens.error else SupermercadoColorTokens.success
         Card(
-            modifier = Modifier.fillMaxWidth().height(KpiCardHeight),
+            modifier = Modifier.fillMaxWidth(),
             shape = CardRadius,
             colors = CardDefaults.cardColors(containerColor = SupermercadoColorTokens.surface),
             border = BorderStroke(1.dp, corSaldo.copy(alpha = 0.25f)),
@@ -259,10 +261,10 @@ private fun KpiRow(
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
                     .background(Brush.verticalGradient(listOf(corSaldo.copy(alpha = 0.10f), Color.Transparent)))
-                    .padding(14.dp),
-                verticalArrangement = Arrangement.SpaceBetween,
+                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
                 Text("Saldo disponível", style = MaterialTheme.typography.labelMedium, color = SupermercadoColorTokens.onSurfaceMuted)
                 Text(
